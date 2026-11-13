@@ -1,0 +1,181 @@
+# DAH Labs pyproject.toml template (rules PY-*, see docs/standards/python.md).
+# Copy this file to the root of your Python project (for example backend/pyproject.toml)
+# and replace every "TODO" marker.
+
+[project]
+name = "my-project" # TODO: distribution name, kebab-case (for example "baraza").
+version = "0.1.0" # Updated by release-please; do not edit by hand after the first release.
+description = "TODO: one sentence that says what the project does."
+readme = "README.md"
+license = "Apache-2.0" # TODO: keep Apache-2.0 unless an exception is documented (FILE-003).
+authors = [{ name = "DAH Labs - Data Afrique Hub" }]
+requires-python = ">=3.12" # PY-001
+dependencies = [
+  # TODO: runtime dependencies only. Test and lint tools go in [dependency-groups].
+]
+
+[project.urls]
+Repository = "https://github.com/DAH-Projects-and-Innovations/TODO"
+Issues = "https://github.com/DAH-Projects-and-Innovations/TODO/issues"
+
+[build-system]
+# uv's build backend. It expects the code in src/<package_name>/.
+requires = ["uv_build>=0.13.8,<0.14"]
+build-backend = "uv_build"
+
+[dependency-groups]
+# Installed by `uv sync` by default. Lower bounds only; exact versions live in uv.lock.
+dev = [
+  "mypy>=2.4.1",
+  "pytest>=9.2.0",
+  "pytest-cov>=7.1.0",
+  "ruff>=0.17.5",
+  # "pytest-asyncio>=1.4.0",   # TODO: uncomment for async code (FastAPI, arq).
+  # "pytest-recording>=0.14.1", # TODO: uncomment to record HTTP responses (PY-016).
+  # "import-linter>=2.16",     # Level 2: architecture contracts (ARCH-*).
+]
+
+[tool.uv]
+# Everyone uses a compatible uv version: local machines and CI (setup-uv reads this value).
+required-version = ">=0.13.8"
+
+# ---------------------------------------------------------------------------------------------
+# Ruff: linter AND formatter (PY-004). Replaces black, isort, flake8, pyupgrade, pydocstyle and
+# the basic checks of bandit. Documentation: https://docs.astral.sh/ruff/
+# ---------------------------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100 # Same value in every DAH Labs repository.
+target-version = "py312" # Keep in sync with requires-python.
+src = ["src", "tests"]
+extend-exclude = [
+  # TODO: add generated code here (for example "src/my_package/_generated").
+]
+
+[tool.ruff.format]
+docstring-code-format = true # Also formats code examples inside docstrings.
+
+[tool.ruff.lint]
+select = [
+  "E",   # pycodestyle errors
+  "W",   # pycodestyle warnings
+  "F",   # Pyflakes: unused imports and variables, undefined names
+  "I",   # isort: import order
+  "N",   # pep8-naming: naming conventions
+  "UP",  # pyupgrade: modern Python 3.12 syntax
+  "B",   # flake8-bugbear: likely bugs
+  "S",   # flake8-bandit: security checks
+  "C4",  # flake8-comprehensions
+  "SIM", # flake8-simplify
+  "PT",  # flake8-pytest-style
+  "RUF", # Ruff-specific rules (RUF100: unused noqa)
+  "PGH", # pygrep-hooks: no blanket noqa or type: ignore (PY-007)
+  "PLC", # Pylint conventions
+  "PLE", # Pylint errors
+  "PLR", # Pylint refactoring hints (limits configured below)
+  "PLW", # Pylint warnings
+  "C90", # mccabe: cyclomatic complexity
+  "D",   # pydocstyle: docstrings (Google convention, see below)
+  "T20", # flake8-print: no print() (PY-019)
+  "ERA", # eradicate: no commented-out code
+]
+ignore = [
+  "E501", # Line length is handled by the formatter.
+  "D100", # Module docstrings are optional.
+  "D104", # Package (__init__.py) docstrings are optional.
+  "D105", # Magic method docstrings are optional.
+  "D107", # Document the class, not __init__.
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+  "S101",    # assert is the normal way to check results in pytest.
+  "PLR2004", # Literal values are expected in tests.
+  "D",       # Test names describe the behavior; docstrings are not required.
+]
+"scripts/**" = [
+  "T201", # Command line scripts may print.
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google" # PY-011
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pylint]
+max-args = 6
+max-branches = 12
+max-returns = 6
+max-statements = 50
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI declares dependencies in default argument values: this is the expected pattern.
+extend-immutable-calls = [
+  "fastapi.Depends",
+  "fastapi.Query",
+  "fastapi.Path",
+  "fastapi.Body",
+  "fastapi.File",
+  "fastapi.Form",
+  "fastapi.Header",
+  "fastapi.Security",
+]
+
+# ---------------------------------------------------------------------------------------------
+# mypy: static type checking (PY-008 to PY-010). Strict for new code.
+# ---------------------------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+files = ["src"]
+# plugins = ["pydantic.mypy"] # TODO: uncomment when the project uses Pydantic.
+
+# Existing code that is not typed yet: relax checks module by module, never globally.
+# Each override has a tracking issue and is removed when the module is typed (PY-009).
+# [[tool.mypy.overrides]]
+# module = ["my_package.legacy.*"] # TODO: tracking issue #123
+# disallow_untyped_defs = false
+# disallow_incomplete_defs = false
+
+# Third-party libraries without type information.
+# [[tool.mypy.overrides]]
+# module = ["some_untyped_library.*"]
+# ignore_missing_imports = true
+
+# ---------------------------------------------------------------------------------------------
+# pytest (PY-012 to PY-016).
+# ---------------------------------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = [
+  "-ra",               # Short summary of skipped and failed tests.
+  "--strict-markers",  # An undeclared marker is an error.
+  "--strict-config",   # A configuration error is an error.
+  "--import-mode=importlib",
+]
+xfail_strict = true
+markers = [
+  "slow: takes more than 1 second; excluded from the pre-push hook",
+  "integration: needs an external service (database, queue, container)",
+  "requires_gpu: needs a GPU; never runs on GitHub-hosted runners",
+  "requires_api_key: calls a paid or rate-limited API; never runs in CI",
+]
+# asyncio_mode = "auto" # TODO: uncomment with pytest-asyncio.
+
+# ---------------------------------------------------------------------------------------------
+# Coverage (PY-017). The threshold itself is passed by CI (--cov-fail-under).
+# ---------------------------------------------------------------------------------------------
+[tool.coverage.run]
+source_pkgs = ["my_package"] # TODO: import name of your package (for example "baraza").
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+exclude_also = [
+  "if TYPE_CHECKING:",
+  "raise NotImplementedError",
+  "@(abc\\.)?abstractmethod",
+  "if __name__ == .__main__.:",
+]

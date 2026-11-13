@@ -1,0 +1,6 @@
+# Copy this file to .prettierignore
+pnpm-lock.yaml
+dist/
+build/
+.next/
+coverage/

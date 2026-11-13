@@ -1,0 +1,93 @@
+# DAH Labs pre-commit template: Python project (rules HOOK-*, see docs/standards/git-hooks.md).
+# Copy to .pre-commit-config.yaml at the root of the repository, then run once:
+#   uvx pre-commit install          # installs the pre-commit, commit-msg and pre-push hooks
+#   uvx pre-commit run --all-files  # checks every file once
+# Versions ("rev") are updated by Dependabot (package-ecosystem: pre-commit).
+minimum_pre_commit_version: "4.0.0"
+default_install_hook_types: [pre-commit, commit-msg, pre-push]
+default_stages: [pre-commit]
+
+repos:
+  # --- pre-commit stage: fast checks on the staged files (target: less than 10 seconds) ----------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-toml
+      - id: check-json
+      - id: check-added-large-files
+        args: [--maxkb=500] # REPO-006: data and models never go in Git.
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: detect-private-key
+      - id: no-commit-to-branch # GIT-002: no commit on main.
+        args: [--branch, main]
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks # SEC-004: no secret in Git.
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.5 # TODO: keep the same version as ruff in the dev dependency group.
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.13.8
+    hooks:
+      - id: uv-lock # PY-002: uv.lock matches pyproject.toml.
+        args: [--check]
+
+  # Uncomment if the repository has Jupyter notebooks (ML-*).
+  # - repo: https://github.com/kynan/nbstripout
+  #   rev: 0.9.1
+  #   hooks:
+  #     - id: nbstripout
+
+  # Uncomment if the repository has a Dockerfile (hadolint binary from PyPI, no Docker needed).
+  # - repo: https://github.com/AleksaC/hadolint-py
+  #   rev: v2.15.1
+  #   hooks:
+  #     - id: hadolint
+
+  # --- commit-msg stage: Conventional Commits (COM-001) -------------------------------------
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v4.5.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: [--strict]
+
+  # --- pre-push stage: slower checks, once per push -----------------------------------------
+  - repo: https://github.com/DAH-Projects-and-Innovations/engineering-standards
+    rev: v1.0.0 # TODO: latest release of the DAH Labs engineering standards.
+    hooks:
+      - id: dah-branch-name # GIT-002, GIT-003
+
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy (type check)
+        entry: uv run --frozen mypy
+        language: system
+        types: [python]
+        pass_filenames: false
+        stages: [pre-push]
+      - id: pytest-unit
+        name: pytest (fast unit tests)
+        entry: >-
+          uv run --frozen pytest -q
+          -m "not slow and not integration and not requires_gpu and not requires_api_key"
+        language: system
+        types: [python]
+        pass_filenames: false
+        stages: [pre-push]
