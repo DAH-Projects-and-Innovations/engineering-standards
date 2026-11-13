@@ -1,0 +1,52 @@
+# DAH Labs issue form: bug report (rule FILE-010).
+name: Bug report
+description: Something does not work as expected.
+title: "bug: "
+labels: ["type: bug", "status: needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to report a problem.
+        **Security problem?** Do not open a public issue: use "Report a vulnerability" in the Security tab.
+        **Never attach real personal data** (names, transcripts, recordings, health data).
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the problem. Paste error messages as text, not screenshots.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Start the API with `docker compose up`
+        2. Send `POST /query` with ...
+        3. See the error
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      placeholder: v1.2.0 or 3f2c1ab
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Operating system, Python / Node.js version, browser, configuration mode.
+      placeholder: Ubuntu 24.04 (WSL), Python 3.12, configs/free.yaml
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Remove any secret or personal data before you paste.
+      render: text

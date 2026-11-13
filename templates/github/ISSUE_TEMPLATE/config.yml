@@ -1,0 +1,10 @@
+# DAH Labs issue chooser configuration (rule FILE-010).
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    # TODO: replace <repository> with the repository name.
+    url: https://github.com/DAH-Projects-and-Innovations/<repository>/security/advisories/new
+    about: Report vulnerabilities privately. Never in a public issue.
+  - name: DAH Labs engineering standards
+    url: https://github.com/DAH-Projects-and-Innovations/engineering-standards
+    about: Conventions used in this repository (branches, commits, CI).

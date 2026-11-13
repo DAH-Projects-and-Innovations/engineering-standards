@@ -1,0 +1,26 @@
+# DAH Labs .gitattributes template (rule FILE-014). Copy to .gitattributes at the root.
+
+# Store text files with LF line endings in the repository, whatever the operating system.
+* text=auto eol=lf
+
+# Windows scripts keep CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Lock files: collapsed in pull requests and excluded from language statistics.
+uv.lock linguist-generated=true -diff
+pnpm-lock.yaml linguist-generated=true -diff
+
+# Notebooks: shown as code in language statistics.
+*.ipynb linguist-language=Python
+
+# Binary files.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.pdf binary
+*.zip binary

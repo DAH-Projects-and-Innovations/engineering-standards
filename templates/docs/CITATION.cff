@@ -1,0 +1,21 @@
+# DAH Labs CITATION.cff template (rule FILE-017). Copy to CITATION.cff at the root.
+# Format: https://citation-file-format.github.io/  Validate: uvx cffconvert --validate
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+type: software # TODO: "software" for code, "dataset" for a dataset.
+title: "TODO: title of the project"
+abstract: "TODO: two or three sentences."
+authors:
+  # TODO: list the contributors who agree to be named, or keep the organization only.
+  - name: "DAH Labs - Data Afrique Hub"
+  # - family-names: "TODO"
+  #   given-names: "TODO"
+  #   orcid: "https://orcid.org/0000-0000-0000-0000"
+repository-code: "https://github.com/DAH-Projects-and-Innovations/TODO"
+license: Apache-2.0 # TODO: CC-BY-4.0 for a dataset.
+version: "0.1.0" # TODO: keep in sync with the latest release.
+date-released: "2026-01-01" # TODO: date of the release (YYYY-MM-DD).
+keywords:
+  - "TODO"
+  - "African languages"
+# Add "preferred-citation" when a paper describes the work.

@@ -1,0 +1,14 @@
+# DAH Labs CODEOWNERS template (rule FILE-008). Copy to .github/CODEOWNERS.
+# Syntax: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# Rules:
+# - Name TEAMS, never individual people.
+# - Each team MUST have at least Write access to the repository, or GitHub ignores the line.
+# - The last matching line wins.
+
+# TODO: create the team "maintainers" in the organization and give it Write or Maintain access.
+*                       @DAH-Projects-and-Innovations/maintainers
+
+# Optional: a second team for sensitive files, once it exists (PR-007).
+# /.github/workflows/   @DAH-Projects-and-Innovations/maintainers @DAH-Projects-and-Innovations/security
+# /SECURITY.md          @DAH-Projects-and-Innovations/maintainers @DAH-Projects-and-Innovations/security

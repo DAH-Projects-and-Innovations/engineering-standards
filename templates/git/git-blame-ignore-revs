@@ -1,0 +1,9 @@
+# DAH Labs .git-blame-ignore-revs template (rule FILE-018). Copy to .git-blame-ignore-revs.
+# Commits listed here (full SHA) are skipped by "git blame" and by the GitHub blame view.
+# Only list mass formatting commits, never commits that change behavior.
+#
+# Enable it locally once:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# style: apply ruff format (TODO: replace with the full SHA of the commit on main)
+# 0000000000000000000000000000000000000000
