@@ -1,0 +1,76 @@
+# Integration test of the reusable workflows.
+#
+# The reusable workflows of this repository are called on small fixture projects
+# (tests/fixtures/), exactly like a project repository would call them.
+# If this workflow fails, a change in a reusable workflow would break the projects.
+name: Reusable workflows integration
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+      - "tests/fixtures/**"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/**"
+      - "tests/fixtures/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  python-fixture:
+    name: python-ci on the Python fixture
+    uses: ./.github/workflows/python-ci.yml
+    permissions:
+      contents: read
+    with:
+      working-directory: tests/fixtures/python-minimal
+      python-version: "3.12"
+      coverage-fail-under: 90
+      coverage-artifact-name: coverage-python-fixture
+
+  node-fixture:
+    name: node-ci on the Node fixture
+    uses: ./.github/workflows/node-ci.yml
+    permissions:
+      contents: read
+    with:
+      working-directory: tests/fixtures/node-minimal
+      coverage-path: coverage/lcov.info
+      coverage-artifact-name: coverage-node-fixture
+
+  security-fixtures:
+    name: security on the fixtures
+    uses: ./.github/workflows/security.yml
+    permissions:
+      contents: read
+    with:
+      scan-secrets: false
+      python-working-directory: tests/fixtures/python-minimal
+      node-working-directory: tests/fixtures/node-minimal
+
+  coverage-artifacts:
+    name: Coverage artifacts exist
+    needs: [python-fixture, node-fixture]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Download the coverage reports
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: coverage-*-fixture
+          path: coverage
+      - name: Check the reports
+        run: |
+          test -s coverage/coverage-python-fixture/coverage.xml
+          test -s coverage/coverage-node-fixture/lcov.info
+          echo "Both coverage reports were produced."
