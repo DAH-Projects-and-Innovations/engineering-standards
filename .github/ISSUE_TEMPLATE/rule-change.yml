@@ -1,0 +1,41 @@
+name: Rule change proposal
+description: Propose a new rule, or a change to an existing rule (see CONTRIBUTING.md).
+title: "standards: "
+labels: ["type: decision", "status: needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: The discussion stays open at least 5 working days. A structuring decision also needs an ADR.
+  - type: input
+    id: rule
+    attributes:
+      label: Rule ID (if the rule exists)
+      placeholder: PY-017
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What does not work today? Give a real example.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed rule
+      description: Text of the rule, requirement keyword (MUST/SHOULD/MAY) and level (1/2/3).
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification
+      description: How is the rule checked? Which tool, or which manual step?
+    validations:
+      required: true
+  - type: textarea
+    id: cost
+    attributes:
+      label: Cost for existing repositories
+      description: What must existing repositories change? Is a major version of the standards needed?
+    validations:
+      required: true

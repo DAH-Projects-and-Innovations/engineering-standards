@@ -1,0 +1,23 @@
+name: Problem in the standards
+description: A rule is unclear, wrong or outdated; a template, workflow or hook does not work.
+title: "fix: "
+labels: ["type: bug", "status: needs triage"]
+body:
+  - type: input
+    id: location
+    attributes:
+      label: File or rule
+      placeholder: docs/standards/python.md, PY-009, or .github/workflows/python-ci.yml
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is the problem?
+      description: For a workflow, paste the error and the link to the failed run.
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested fix

@@ -1,0 +1,19 @@
+# DAH Labs issue form: question (rule FILE-010).
+name: Question
+description: Ask a question about the project, its setup or its use.
+title: "question: "
+labels: ["type: question"]
+body:
+  - type: markdown
+    attributes:
+      value: Before you ask, please read the README and CONTRIBUTING.md. Questions in English or French are welcome.
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+    validations:
+      required: true
+  - type: textarea
+    id: tried
+    attributes:
+      label: What did you already try?
