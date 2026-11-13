@@ -1,0 +1,19 @@
+# Hooks that other DAH Labs repositories can use directly:
+#
+#   - repo: https://github.com/DAH-Projects-and-Innovations/engineering-standards
+#     rev: v1.0.0
+#     hooks:
+#       - id: dah-branch-name
+#
+# See docs/standards/git-hooks.md.
+- id: dah-branch-name
+  name: Check branch name (DAH Labs convention)
+  description: >-
+    Rejects direct pushes to main and branch names that do not follow
+    <type>/<issue-number>-<short-description> (rules GIT-002, GIT-003).
+  entry: hooks/check_branch_name.py
+  language: script
+  pass_filenames: false
+  always_run: true
+  stages: [pre-push]
+  minimum_pre_commit_version: "3.2.0"
