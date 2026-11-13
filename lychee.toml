@@ -1,0 +1,31 @@
+# lychee link checker configuration: https://lychee.cli.rs
+# Local runs (pre-commit) use --offline: only relative links and anchors are checked.
+# CI also checks external links.
+cache = true
+max_cache_age = "1d"
+include_fragments = "anchor-only"
+max_retries = 3
+timeout = 20
+accept = ["200..=299", "429"]
+exclude_path = [
+  "node_modules",
+  ".venv",
+  "_private",
+  # Templates link to files that exist only in the target repository (LICENSE, docs/...).
+  "templates/docs/README.md",
+]
+exclude = [
+  # Placeholders used in templates.
+  "^https://github\\.com/DAH-Projects-and-Innovations/<",
+  "%3C",
+  "TODO",
+  # Pages that require a login or block automated clients.
+  "^https://github\\.com/organizations/",
+  "^https://github\\.com/settings/",
+  "^https://sonarcloud\\.io/",
+  "^https://www\\.linkedin\\.com/",
+  # Absolute links to this repository (used in templates, which are copied elsewhere). They only
+  # resolve once the change is merged on main; relative links are checked offline instead.
+  "^https://github\\.com/DAH-Projects-and-Innovations/engineering-standards",
+  "^https://DAH-Projects-and-Innovations\\.github\\.io/",
+]

@@ -1,0 +1,19 @@
+# Normalize line endings: text files are stored with LF in the repository.
+* text=auto eol=lf
+
+# Windows scripts keep CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Lock files: do not show diffs by default, and mark them as generated on GitHub.
+uv.lock linguist-generated=true -diff
+pnpm-lock.yaml linguist-generated=true -diff
+
+# Binary files.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
