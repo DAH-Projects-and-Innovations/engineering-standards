@@ -1,0 +1,83 @@
+# CI of the engineering-standards repository itself (dogfooding).
+name: CI
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+  schedule:
+    # Every Monday at 06:00 UTC: detect broken external links.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  pre-commit:
+    name: pre-commit
+    uses: ./.github/workflows/pre-commit.yml
+    permissions:
+      contents: read
+    with:
+      skip: no-commit-to-branch
+
+  hook-tests:
+    name: Tests of hooks and scripts
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up uv
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          python-version: "3.12"
+          enable-cache: false
+      - name: Run pytest
+        run: uv run --no-project --with pytest==9.2.0 pytest -v tests/hooks
+      - name: Check that the rules matrix is up to date
+        run: uv run --no-project python scripts/generate_rules_matrix.py --check
+
+  links:
+    name: Links (internal and external)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check links with lychee
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          args: --config lychee.toml --no-progress "./**/*.md"
+          fail: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  pr-conventions:
+    name: PR conventions
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/pr-conventions.yml
+    permissions:
+      contents: read
+      pull-requests: read
+
+  security:
+    name: Security
+    if: github.event_name != 'schedule'
+    uses: ./.github/workflows/security.yml
+    permissions:
+      contents: read
