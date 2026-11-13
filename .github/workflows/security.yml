@@ -1,0 +1,136 @@
+# Reusable workflow: supply chain and secret checks.
+#
+# - dependency-review: blocks a PR that adds a dependency with a known vulnerability (SEC-006).
+# - secrets: scans the Git history with the gitleaks CLI (SEC-003). The gitleaks GitHub Action
+#   needs a paid license for organization repositories, so the CLI is used directly.
+# - python-audit / node-audit: optional audits of the locked dependencies (SEC-007).
+#
+# CodeQL is NOT in this workflow: enable the CodeQL "default setup" in the repository
+# settings instead (SEC-005). OpenSSF Scorecard has its own template
+# (templates/github/workflows/scorecard.yml) because it cannot run as a reusable workflow
+# when it publishes results.
+name: Security (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      fail-on-severity:
+        description: "Lowest vulnerability severity that fails dependency review: low, moderate, high, critical."
+        type: string
+        default: high
+      scan-secrets:
+        description: Scan the full Git history with gitleaks.
+        type: boolean
+        default: true
+      python-working-directory:
+        description: Directory with uv.lock to audit with pip-audit. Empty means no Python audit.
+        type: string
+        default: ""
+      node-working-directory:
+        description: Directory with pnpm-lock.yaml to audit with `pnpm audit`. Empty means no Node audit.
+        type: string
+        default: ""
+      timeout-minutes:
+        description: Maximum duration of each job.
+        type: number
+        default: 10
+
+permissions:
+  contents: read
+
+env:
+  GITLEAKS_VERSION: "8.30.1"
+  # SHA-256 of gitleaks_8.30.1_linux_x64.tar.gz, from the release checksums file.
+  GITLEAKS_SHA256: "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb"
+  PIP_AUDIT_VERSION: "2.10.1"
+
+jobs:
+  dependency-review:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    permissions:
+      contents: read
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Review dependency changes
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: ${{ inputs.fail-on-severity }}
+          comment-summary-in-pr: never
+
+  secrets:
+    name: Secret scan (gitleaks)
+    if: inputs.scan-secrets
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    permissions:
+      contents: read
+    steps:
+      - name: Check out the full history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install gitleaks (checksum verified)
+        run: |
+          archive="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -sSfL -o "$archive" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${archive}"
+          echo "${GITLEAKS_SHA256}  ${archive}" | sha256sum --check --strict
+          tar -xzf "$archive" gitleaks
+      - name: Scan the Git history
+        run: ./gitleaks git --redact --verbose --exit-code 1 .
+
+  python-audit:
+    name: Python dependency audit (pip-audit)
+    if: inputs.python-working-directory != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: ${{ inputs.python-working-directory }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up uv
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          working-directory: ${{ inputs.python-working-directory }}
+          enable-cache: false
+      - name: Audit the locked dependencies
+        run: |
+          # Exported with hashes, so pip-audit can audit without resolving or installing anything.
+          uv export --frozen --no-emit-project --format requirements-txt > "$RUNNER_TEMP/requirements.txt"
+          uvx "pip-audit==${PIP_AUDIT_VERSION}" --strict --disable-pip \
+            --requirement "$RUNNER_TEMP/requirements.txt"
+
+  node-audit:
+    name: Node dependency audit (pnpm audit)
+    if: inputs.node-working-directory != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: ${{ inputs.node-working-directory }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up pnpm (version from the packageManager field)
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with:
+          package_json_file: ${{ inputs.node-working-directory }}/package.json
+      - name: Audit production dependencies
+        run: pnpm audit --prod --audit-level high
