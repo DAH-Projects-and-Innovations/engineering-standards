@@ -63,6 +63,27 @@ jobs:
       python-working-directory: backend # TODO: or remove (Level 2)
       node-working-directory: frontend # TODO: or remove (Level 2)
 
+  # Level 2: SonarQube Cloud analysis with the coverage of the jobs above (SONAR-*).
+  # Needs sonar-project.properties (templates/sonar/) and the SONAR_TOKEN organization secret.
+  sonar:
+    name: sonar
+    needs: [backend, frontend]
+    uses: DAH-Projects-and-Innovations/engineering-standards/.github/workflows/sonar.yml@v1
+    with:
+      python-working-directory: backend # TODO: or remove
+      node-working-directory: frontend # TODO: or remove
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # Dockerfile lint and image build, without push (SEC-009). Images are pushed by release.yml.
+  docker:
+    name: docker
+    uses: DAH-Projects-and-Innovations/engineering-standards/.github/workflows/docker.yml@v1
+    permissions:
+      contents: read
+    with:
+      context: backend # TODO: or remove this job if the repository has no Dockerfile
+
 # Integration tests with services stay in the project (PY-025). Example of a job to add:
 #
 # integration:

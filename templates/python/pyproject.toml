@@ -179,3 +179,27 @@ exclude_also = [
   "@(abc\\.)?abstractmethod",
   "if __name__ == .__main__.:",
 ]
+
+# ---------------------------------------------------------------------------------------------
+# import-linter: architecture contracts (ARCH-002, Level 2). Uncomment when the package has the
+# layers of docs/standards/architecture.md, and set run-import-linter: true in CI.
+# ---------------------------------------------------------------------------------------------
+# [tool.importlinter]
+# root_packages = ["my_package"] # TODO
+# include_external_packages = true
+#
+# [[tool.importlinter.contracts]]
+# name = "Layers: outer layers depend on inner layers, never the reverse"
+# type = "layers"
+# layers = [
+#   "my_package.bootstrap",
+#   "my_package.interfaces | my_package.infrastructure",
+#   "my_package.application",
+#   "my_package.domain",
+# ]
+#
+# [[tool.importlinter.contracts]]
+# name = "The domain and the application use no framework and no I/O library"
+# type = "forbidden"
+# source_modules = ["my_package.domain", "my_package.application"]
+# forbidden_modules = ["fastapi", "httpx", "sqlalchemy", "pydantic_settings"]
