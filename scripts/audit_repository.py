@@ -45,6 +45,13 @@ REQUIRED_FILES = {
     "FILE-016": [".pre-commit-config.yaml"],
 }
 
+# Files of Level 2 repositories. Reported with "(Level 2)" so that a Level 1 audit can ignore them.
+LEVEL_2_FILES = [
+    ("SONAR-003", "sonar-project.properties"),
+    ("REL-004", "release-please-config.json"),
+    ("REL-004", ".release-please-manifest.json"),
+]
+
 
 @dataclass(frozen=True)
 class Finding:
@@ -248,6 +255,13 @@ def check_files(full_name: str, root: str) -> list[Finding]:
                 rule_id, f"{candidates[0]} exists", status(found is not None), found or "missing"
             )
         )
+    for rule_id, path in LEVEL_2_FILES:
+        present = path in paths
+        findings.append(
+            Finding(
+                rule_id, f"(Level 2) {path} exists", status(present), "" if present else "missing"
+            )
+        )
     prefix = f"{root.strip('/')}/" if root else ""
     findings.append(
         Finding("PY-002", "uv.lock is committed", status(f"{prefix}uv.lock" in paths), "")
@@ -297,7 +311,9 @@ def render(full_name: str, findings: list[Finding]) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Read-only audit of DAH Labs Level 1 rules.")
+    parser = argparse.ArgumentParser(
+        description="Read-only audit of DAH Labs Level 1 rules (and Level 2 files)."
+    )
     parser.add_argument(
         "repository", help="owner/name, for example DAH-Projects-and-Innovations/baraza"
     )
