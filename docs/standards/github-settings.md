@@ -167,7 +167,7 @@ GitHub ignores a CODEOWNERS line when the team does not have at least **Write** 
 **MUST** · Level 1 · Verified by: Settings → Actions → General → Workflow permissions (manual)
 
 - **Workflow permissions:** "Read repository contents and packages permissions". Each workflow asks for more when it needs it (CI-004).
-- **Allow GitHub Actions to create and approve pull requests:** off. Turn it on only for repositories that use release-please, which opens release PRs (Level 2).
+- **Allow GitHub Actions to create and approve pull requests:** off. Turn it on only for repositories that use release-please **without** the GitHub App (see [REL-005](releases.md#rel-005-the-release-pr-is-opened-with-a-github-app-token)).
 - **Fork pull request workflows from outside collaborators:** "Require approval for first-time contributors" (or stricter).
 - **Allowed actions:** "Allow all actions and reusable workflows" is acceptable while every workflow pins actions by SHA (CI-005). A stricter policy (GitHub, verified creators and a list of selected actions) is better.
 
@@ -183,7 +183,7 @@ On GitHub Free, rulesets and branch protection are **not available on private re
 
 ## The organization `.github` repository
 
-A special public repository named `.github` provides default community health files (Code of Conduct, security policy, issue and PR templates) to every repository that does not have its own, and `profile/README.md` is shown on the organization page. Its content and setup instructions are planned in `org-defaults/` in the next version of these standards.
+A special public repository named `.github` provides default community health files (Code of Conduct, security policy, issue and PR templates) to every repository that does not have its own, and `profile/README.md` is shown on the organization page. It also holds **workflow templates**, proposed in "Actions → New workflow". The files and the setup commands are in [`org-defaults/`](../../org-defaults/README.md).
 
 ## Checklist
 

@@ -17,8 +17,11 @@
 | [`node-ci.yml`](../../.github/workflows/node-ci.yml) | pnpm (cached) → lint → format check → typecheck → tests → build → coverage artifact | 1 |
 | [`pr-conventions.yml`](../../.github/workflows/pr-conventions.yml) | PR title (Conventional Commits, length) and branch name | 1 |
 | [`security.yml`](../../.github/workflows/security.yml) | Dependency review on PRs, gitleaks on the history, optional pip-audit and pnpm audit | 1 (secrets), 2 (others) |
+| [`sonar.yml`](../../.github/workflows/sonar.yml) | Restores the coverage artifacts, then SonarQube Cloud analysis that waits for the quality gate; skipped without `SONAR_TOKEN` (fork PRs) | 2 |
+| [`docker.yml`](../../.github/workflows/docker.yml) | hadolint (checksum-verified binary) → Buildx build with GitHub Actions cache → on a release only: push to GHCR and provenance attestation | 1 (build), 2 (publication) |
+| [`release-please.yml`](../../.github/workflows/release-please.yml) | Release PR, tag and GitHub Release from Conventional Commits; GitHub App token; optional moving major tag; outputs `release_created` and `version` | 2 |
 
-Planned for the next version of these standards: `sonar.yml` (SonarQube Cloud analysis with the coverage artifacts), `docker.yml` (hadolint, build, push to GHCR on release) and `release-please.yml`.
+Publication is done by a separate caller, [`templates/github/workflows/release.yml`](../../templates/github/workflows/release.yml), that runs on pushes to `main` (see [Versioning and releases](releases.md)).
 
 Each workflow documents its inputs at the top of the file. The caller template is [`templates/github/workflows/ci.yml`](../../templates/github/workflows/ci.yml). It is tested in this repository by [`example-integration.yml`](../../.github/workflows/example-integration.yml), which calls the workflows on the fixtures in `tests/fixtures/`.
 
@@ -212,8 +215,8 @@ DAH Labs has no servers. "Deployment" means publishing a versioned artifact that
 
 | Artifact | Where | How to authenticate | Notes |
 |---|---|---|---|
-| Container image | **GitHub Container Registry** (`ghcr.io/dah-projects-and-innovations/<image>`) | `GITHUB_TOKEN` with `packages: write`, in the release job only | Free for public images. Tag `X.Y.Z` and `latest`. The `docker.yml` reusable workflow is planned. |
-| Python package | **PyPI** | [Trusted Publishing](https://docs.pypi.org/trusted-publishers/) (OIDC): no token stored in GitHub | `pypa/gh-action-pypi-publish`, `permissions: id-token: write`, in a protected `pypi` environment |
+| Container image | **GitHub Container Registry** (`ghcr.io/dah-projects-and-innovations/<image>`) | `GITHUB_TOKEN` with `packages: write`, in the release job only | Free for public images. `docker.yml` with `push: true` tags `X.Y.Z`, `X.Y` and `latest`, and attests the provenance. |
+| Python package | **PyPI** | [Trusted Publishing](https://docs.pypi.org/trusted-publishers/) (OIDC): no token stored in GitHub | `uv publish --trusted-publishing always` (or `pypa/gh-action-pypi-publish`), `permissions: id-token: write`, in a protected `pypi` environment |
 | Model or dataset | **Hugging Face Hub**, organization account | `HF_TOKEN` (fine-grained, write access to the organization repositories only) stored as an environment secret | Upload with `huggingface_hub`; tag the Hub revision with the Git version |
 | Documentation | **GitHub Pages** | `actions/deploy-pages` with `pages: write` and `id-token: write` | Free for public repositories |
 
