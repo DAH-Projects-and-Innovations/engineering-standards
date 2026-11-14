@@ -10,7 +10,7 @@ The engineering rules, templates and reusable CI workflows of every repository o
 
 ## Why these standards
 
-DAH Labs wants to become, by 2036, an African AI laboratory of world reference. Our repositories are public: they must show clean code, a clear architecture, measured quality, reliable CI, reproducible research and good security. Most contributors are volunteers, in different countries and time zones, with different levels of experience. These standards give everybody the same simple rules, the tools that check them automatically, and files ready to copy.
+DAH Labs wants to become, an African AI laboratory of world reference. Our repositories are public: they must show clean code, a clear architecture, measured quality, reliable CI, reproducible research and good security. Most contributors are volunteers, in different countries and time zones, with different levels of experience. These standards give everybody the same simple rules, the tools that check them automatically, and files ready to copy.
 
 Everything works **without infrastructure and without cost**: GitHub (Actions with hosted runners, Pages, Packages) and free services for public open source projects.
 
