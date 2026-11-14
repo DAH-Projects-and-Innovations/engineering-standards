@@ -28,7 +28,13 @@
 - [CI/CD with GitHub Actions](standards/ci-cd.md)
 - [Security](standards/security.md)
 - [GitHub settings](standards/github-settings.md)
-- Planned for the next version: [Architecture](standards/architecture.md), [Clean code](standards/clean-code.md), [Testing](standards/testing.md), [SonarQube Cloud](standards/sonar.md), [Releases](standards/releases.md), [ML and research](standards/ml-research.md), [Documentation](standards/documentation.md)
+- [Architecture](standards/architecture.md)
+- [Clean code](standards/clean-code.md)
+- [Testing](standards/testing.md)
+- [SonarQube Cloud](standards/sonar.md)
+- [Versioning and releases](standards/releases.md)
+- [ML and research](standards/ml-research.md)
+- [Documentation](standards/documentation.md)
 
 ## Compliance
 
@@ -45,6 +51,12 @@
 
 - [Architecture Decision Records](adr/README.md)
 
+## Examples and organization files
+
+- [Example Python service](../examples/python-service/README.md): layers, ports, fakes, import-linter, Docker
+- [Templates](../templates/README.md)
+- [Organization `.github` repository](../org-defaults/README.md)
+
 ---
 
-*Last verified: 2026-11-13.*
+*Last verified: 2026-11-14.*

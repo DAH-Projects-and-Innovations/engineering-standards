@@ -3,8 +3,9 @@
 <!--
 DAH Labs CHANGELOG template (rule FILE-007).
 - Level 1: write it by hand in the Keep a Changelog format below.
-- Level 2: release-please generates this file from the commits. Then delete this comment and
-  never edit the file by hand.
+- Level 2: release-please generates this file from the commits. Before you enable it, delete
+  this comment and the "Unreleased" section (release-please would insert its entries above it),
+  then never edit the generated sections by hand (REL-003).
 -->
 
 All notable changes to this project are documented in this file.

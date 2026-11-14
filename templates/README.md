@@ -5,7 +5,7 @@
 - Files ready to copy into a DAH Labs repository. Each one says where it goes and which rules it implements.
 - Replace every `TODO` marker. Search for them with `grep -rn TODO <file>`.
 - File names have no leading dot here (`gitignore`, `editorconfig`) so that they are visible; add the dot when you copy.
-- The `fixtures` in `tests/fixtures/` show filled versions of the Python and front-end templates that pass CI.
+- The `fixtures` in `tests/fixtures/` and the [example service](../examples/python-service/README.md) show filled versions of the templates that pass CI.
 
 ## Where each template goes
 
@@ -38,9 +38,17 @@
 | [`docs/SECURITY.md`](docs/SECURITY.md) | `SECURITY.md` | FILE-006 |
 | [`docs/CHANGELOG.md`](docs/CHANGELOG.md) | `CHANGELOG.md` | FILE-007 |
 | [`docs/CITATION.cff`](docs/CITATION.cff) | `CITATION.cff` (research repositories) | FILE-017 |
-| [`docs/adr.md`](docs/adr.md) | `docs/adr/NNNN-title.md` | DOC-* (next version) |
+| [`docs/adr.md`](docs/adr.md) | `docs/adr/NNNN-title.md` | DOC-004 |
+| [`github/workflows/release.yml`](github/workflows/release.yml) | `.github/workflows/release.yml` | REL-*, CI-013 |
+| [`release/release-please-config.json`](release/release-please-config.json) | `release-please-config.json` | REL-004 |
+| [`release/release-please-manifest.json`](release/release-please-manifest.json) | `.release-please-manifest.json` | REL-004 |
+| [`sonar/sonar-project.properties`](sonar/sonar-project.properties) | `sonar-project.properties` | FILE-019, SONAR-003 |
+| [`docker/Dockerfile.python`](docker/Dockerfile.python) | `backend/Dockerfile` | SEC-009, HOOK-010 |
+| [`docker/dockerignore`](docker/dockerignore) | `backend/.dockerignore` | SEC-009 |
+| [`ml/model-card.md`](ml/model-card.md) | `MODEL_CARD.md` and `README.md` of the Hub model | ML-004 |
+| [`ml/dataset-card.md`](ml/dataset-card.md) | `DATASET_CARD.md` and `README.md` of the Hub dataset | ML-005 |
 
-Planned for the next version: `sonar-project.properties`, release-please configuration, a Python Dockerfile (multi-stage, non-root, uv), model card and dataset card.
+The [example service](../examples/python-service/README.md) shows the Python, Docker and architecture templates filled and passing CI. The organization `.github` repository is described in [`org-defaults/`](../org-defaults/README.md).
 
 ## Checklist
 
@@ -50,4 +58,4 @@ Planned for the next version: `sonar-project.properties`, release-please configu
 
 ---
 
-*Last verified: 2026-11-13.*
+*Last verified: 2026-11-14.*

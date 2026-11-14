@@ -87,4 +87,4 @@ cd tests/fixtures/node-minimal && pnpm install && pnpm test && cd -
 
 ## Branches, commits, pull requests
 
-This repository follows its own standards: [branch names](docs/standards/git-branching.md), [Conventional Commits](docs/standards/commits.md), squash merge, [pull request template](.github/pull_request_template.md). Scopes used here: `standards`, `templates`, `workflows`, `hooks`, `scripts`, `migration`, `adr`, `getting-started`, `deps`.
+This repository follows its own standards: [branch names](docs/standards/git-branching.md), [Conventional Commits](docs/standards/commits.md), squash merge, [pull request template](.github/pull_request_template.md). Scopes used here: `standards`, `templates`, `workflows`, `hooks`, `scripts`, `migration`, `adr`, `getting-started`, `examples`, `org-defaults`, `deps`, and `main` for release PRs.
