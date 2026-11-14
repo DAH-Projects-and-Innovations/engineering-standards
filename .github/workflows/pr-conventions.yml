@@ -1,0 +1,112 @@
+# Reusable workflow: pull request conventions.
+#
+# - The PR title follows Conventional Commits, because with squash merge the PR title
+#   becomes the commit message on main (rules COM-001, COM-007).
+# - The branch name follows <type>/<issue-number>-<short-description> (rule GIT-003).
+#
+# Call it from a workflow triggered by `pull_request` (see templates/github/workflows/ci.yml).
+# Do NOT call it from `pull_request_target`: see docs/standards/ci-cd.md.
+name: PR conventions (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      types:
+        description: Allowed Conventional Commits types, one per line.
+        type: string
+        default: |
+          feat
+          fix
+          docs
+          style
+          refactor
+          perf
+          test
+          build
+          ci
+          chore
+          revert
+      scopes:
+        description: Allowed scopes, one per line (regular expressions). Empty means any scope.
+        type: string
+        default: ""
+      max-title-length:
+        description: Maximum length of the PR title (the first line of the squash commit).
+        type: number
+        default: 72
+      check-branch-name:
+        description: Check the name of the source branch.
+        type: boolean
+        default: true
+      timeout-minutes:
+        description: Maximum duration of each job.
+        type: number
+        default: 5
+
+permissions:
+  contents: read
+
+jobs:
+  pr-title:
+    name: PR title follows Conventional Commits
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    permissions:
+      pull-requests: read
+    steps:
+      - name: Validate the PR title
+        uses: amannn/action-semantic-pull-request@2252a14e810aa9b85c2d560bd7070c802206ecf6 # v6.1.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: ${{ inputs.types }}
+          scopes: ${{ inputs.scopes }}
+          # Description starts with a lower-case letter or a digit and has no final period.
+          subjectPattern: ^[a-z0-9].*[^.]$
+          subjectPatternError: >-
+            The description "{subject}" must start with a lower-case letter and must not end
+            with a period. Example: "feat(api): add cohere embedder".
+
+      - name: Check the PR title length
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+          MAX_LENGTH: ${{ inputs.max-title-length }}
+        run: |
+          length=${#TITLE}
+          if (( length > MAX_LENGTH )); then
+            echo "::error::PR title is ${length} characters long; the maximum is ${MAX_LENGTH} (rule COM-004)."
+            exit 1
+          fi
+          echo "PR title length: ${length}/${MAX_LENGTH}"
+
+  branch-name:
+    name: Branch name follows the convention
+    if: github.event_name == 'pull_request' && inputs.check-branch-name
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    permissions: {}
+    steps:
+      - name: Validate the branch name
+        env:
+          BRANCH: ${{ github.head_ref }}
+        # Keep this pattern identical to BRANCH_PATTERN in hooks/check_branch_name.py.
+        # tests/hooks/test_branch_pattern_sync.py checks that they match.
+        run: |
+          pattern='^(feat|fix|docs|refactor|test|chore|ci|build|perf|hotfix|exp)/([0-9]+-)?[a-z0-9]+(-[a-z0-9]+)*$'
+          case "$BRANCH" in
+            dependabot/*|release-please--*|gh-readonly-queue/*)
+              echo "Bot branch '$BRANCH': not checked."
+              exit 0
+              ;;
+          esac
+          if [[ ! "$BRANCH" =~ $pattern ]]; then
+            echo "::error::Branch '$BRANCH' does not follow <type>/<issue-number>-<short-description> (rule GIT-003)."
+            echo "Examples: feat/42-add-cohere-embedder, fix/57-chunker-overlap, docs/readme"
+            exit 1
+          fi
+          if (( ${#BRANCH} > 60 )); then
+            echo "::error::Branch name is ${#BRANCH} characters long; the maximum is 60 (rule GIT-003)."
+            exit 1
+          fi
+          echo "Branch name '$BRANCH' is valid."

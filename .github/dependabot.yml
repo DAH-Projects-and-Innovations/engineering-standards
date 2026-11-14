@@ -1,0 +1,55 @@
+# Dependabot configuration of the engineering-standards repository.
+version: 2
+
+updates:
+  # Actions used by the reusable workflows and the CI of this repository.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: ci
+      include: scope
+    labels: [dependencies]
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: pre-commit
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: chore
+      include: scope
+    labels: [dependencies]
+    groups:
+      hooks:
+        patterns: ["*"]
+
+  # Fixtures: updated monthly; they only need to stay installable.
+  - package-ecosystem: uv
+    directory: /tests/fixtures/python-minimal
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: test
+      include: scope
+    labels: [dependencies]
+    groups:
+      fixture-python:
+        patterns: ["*"]
+
+  - package-ecosystem: npm
+    directory: /tests/fixtures/node-minimal
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: test
+      include: scope
+    labels: [dependencies]
+    groups:
+      fixture-node:
+        patterns: ["*"]

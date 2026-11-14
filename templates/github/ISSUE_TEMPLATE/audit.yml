@@ -1,0 +1,58 @@
+# DAH Labs issue form: compliance audit (see docs/migration/audit-checklist.md).
+# Used once per quarter, or when a repository starts its migration.
+name: Compliance audit
+description: Audit this repository against the DAH Labs engineering standards.
+title: "chore: compliance audit YYYY-QN"
+labels: ["compliance-audit"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Follow the audit checklist of the DAH Labs engineering standards:
+        https://github.com/DAH-Projects-and-Innovations/engineering-standards/blob/main/docs/migration/audit-checklist.md
+
+        Write one finding per line: rule ID, current state, action, effort (S/M/L).
+
+        **Do not write security weaknesses here** (leaked secret, unprotected data):
+        report them privately in a security advisory.
+  - type: dropdown
+    id: target-level
+    attributes:
+      label: Target compliance level
+      options: ["Level 1 - Foundation", "Level 2 - Standard", "Level 3 - Excellence"]
+    validations:
+      required: true
+  - type: input
+    id: standards-version
+    attributes:
+      label: Version of the standards used
+      placeholder: v1.0.0
+    validations:
+      required: true
+  - type: checkboxes
+    id: level-1
+    attributes:
+      label: Level 1 summary
+      options:
+        - label: Required files (FILE-*)
+        - label: Default branch main and ruleset (GIT-001, GIT-002, GH-002 to GH-005)
+        - label: Conventional Commits and PR title check (COM-*)
+        - label: pre-commit with gitleaks and Ruff (HOOK-*)
+        - label: CI with lint and tests through the reusable workflows (CI-*)
+        - label: Dependabot and secret scanning (SEC-001 to SEC-004)
+  - type: textarea
+    id: findings
+    attributes:
+      label: Findings
+      description: One line per non-compliant rule.
+      value: |
+        | Rule | Current state | Action | Effort | Priority |
+        |---|---|---|---|---|
+        |  |  |  |  |  |
+    validations:
+      required: true
+  - type: textarea
+    id: plan
+    attributes:
+      label: Plan
+      description: Order of the PRs, following the migration playbook.

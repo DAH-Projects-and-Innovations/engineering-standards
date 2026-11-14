@@ -1,0 +1,141 @@
+# Reusable workflow: Python CI (lint, format, type check, tests with coverage).
+#
+# Call it from a project repository (see templates/github/workflows/ci.yml):
+#
+#   jobs:
+#     python:
+#       uses: DAH-Projects-and-Innovations/engineering-standards/.github/workflows/python-ci.yml@v1
+#       with:
+#         working-directory: backend
+#
+# Rules covered: PY-002, PY-004 to PY-009, PY-013, PY-017, CI-003 to CI-008. See docs/standards/ci-cd.md.
+name: Python CI (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: Directory that contains pyproject.toml and uv.lock.
+        type: string
+        default: "."
+      python-version:
+        description: Python version used to run the checks.
+        type: string
+        default: "3.12"
+      uv-version:
+        description: >-
+          uv version. Empty means the version in [tool.uv] required-version of pyproject.toml,
+          or the latest version when it is not set.
+        type: string
+        default: ""
+      sync-args:
+        description: Extra arguments for `uv sync`, for example `--all-extras`.
+        type: string
+        default: ""
+      run-mypy:
+        description: Run mypy (Level 2).
+        type: boolean
+        default: true
+      mypy-targets:
+        description: Space-separated paths given to mypy.
+        type: string
+        default: "src"
+      run-import-linter:
+        description: Run import-linter contracts (`lint-imports`, Level 2).
+        type: boolean
+        default: false
+      pytest-markers:
+        description: Marker expression given to `pytest -m`.
+        type: string
+        default: "not slow and not integration and not requires_gpu and not requires_api_key"
+      coverage-fail-under:
+        description: Minimum total coverage in percent. 0 disables the check.
+        type: number
+        default: 0
+      upload-coverage:
+        description: Upload coverage.xml as an artifact (needed by the Sonar workflow).
+        type: boolean
+        default: true
+      coverage-artifact-name:
+        description: Name of the coverage artifact.
+        type: string
+        default: coverage-python
+      timeout-minutes:
+        description: Maximum duration of the job.
+        type: number
+        default: 20
+
+permissions:
+  contents: read
+
+jobs:
+  python:
+    name: Python checks
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    env:
+      UV_PYTHON: ${{ inputs.python-version }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: ${{ inputs.uv-version }}
+          python-version: ${{ inputs.python-version }}
+          working-directory: ${{ inputs.working-directory }}
+          enable-cache: true
+
+      - name: Install dependencies from the lock file
+        env:
+          SYNC_ARGS: ${{ inputs.sync-args }}
+        run: |
+          read -ra extra <<< "$SYNC_ARGS"
+          uv sync --locked "${extra[@]}"
+
+      - name: Lint (ruff check)
+        run: uv run --no-sync ruff check --output-format=github .
+
+      - name: Check formatting (ruff format)
+        run: uv run --no-sync ruff format --check --diff .
+
+      - name: Type check (mypy)
+        if: inputs.run-mypy
+        env:
+          MYPY_TARGETS: ${{ inputs.mypy-targets }}
+        run: |
+          read -ra targets <<< "$MYPY_TARGETS"
+          uv run --no-sync mypy "${targets[@]}"
+
+      - name: Check architecture contracts (import-linter)
+        if: inputs.run-import-linter
+        run: uv run --no-sync lint-imports
+
+      - name: Run tests with coverage (pytest)
+        env:
+          PYTEST_MARKERS: ${{ inputs.pytest-markers }}
+          COVERAGE_FAIL_UNDER: ${{ inputs.coverage-fail-under }}
+        run: >-
+          uv run --no-sync pytest
+          -m "$PYTEST_MARKERS"
+          --cov
+          --cov-report=term-missing
+          --cov-report=xml:coverage.xml
+          --cov-fail-under="$COVERAGE_FAIL_UNDER"
+
+      - name: Upload the coverage report
+        if: inputs.upload-coverage && !cancelled()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ inputs.coverage-artifact-name }}
+          path: ${{ inputs.working-directory }}/coverage.xml
+          if-no-files-found: warn
+          retention-days: 7

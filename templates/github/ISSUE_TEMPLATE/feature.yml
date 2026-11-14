@@ -1,0 +1,35 @@
+# DAH Labs issue form: feature request (rule FILE-010).
+name: Feature request
+description: Propose a new feature or an improvement.
+title: "feat: "
+labels: ["type: feature", "status: needs triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Which problem do you want to solve, and for whom?
+      placeholder: Users of the free mode cannot ...
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What should happen? Code is not needed.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: dropdown
+    id: contribution
+    attributes:
+      label: Do you want to work on it?
+      options:
+        - "Yes, I would like to open the pull request"
+        - "Maybe, with some help"
+        - "No"
+    validations:
+      required: true

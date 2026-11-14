@@ -1,0 +1,83 @@
+# DAH Labs CI template (rules CI-*): calls the reusable workflows of the engineering standards.
+# Copy to .github/workflows/ci.yml and adapt the TODO markers.
+# Remove the jobs of the parts that your repository does not have.
+name: CI
+
+on:
+  pull_request:
+    # "edited" runs the checks again when the PR title changes.
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# CI-004: read-only by default; each job asks for more only if needed.
+permissions:
+  contents: read
+
+# CI-006: cancel outdated runs of the same PR. Keep concurrency in this caller only.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  conventions:
+    name: conventions
+    uses: DAH-Projects-and-Innovations/engineering-standards/.github/workflows/pr-conventions.yml@v1
+    # TODO (optional): enforce the scopes listed in CONTRIBUTING.md.
+    # with:
+    #   scopes: |
+    #     api
+    #     frontend
+    permissions:
+      contents: read
+      pull-requests: read
+
+  pre-commit:
+    name: pre-commit
+    uses: DAH-Projects-and-Innovations/engineering-standards/.github/workflows/pre-commit.yml@v1
+    with:
+      # Local hooks that need installed tools are covered by the jobs below.
+      skip: no-commit-to-branch,prettier
+
+  backend:
+    name: backend
+    uses: DAH-Projects-and-Innovations/engineering-standards/.github/workflows/python-ci.yml@v1
+    with:
+      working-directory: backend # TODO
+      python-version: "3.12"
+      run-mypy: true # Level 2 (set to false only during a Level 1 migration)
+      coverage-fail-under: 0 # TODO: current coverage, rounded down; never lower it (PY-017)
+
+  frontend:
+    name: frontend
+    uses: DAH-Projects-and-Innovations/engineering-standards/.github/workflows/node-ci.yml@v1
+    with:
+      working-directory: frontend # TODO
+      coverage-path: coverage/lcov.info # Remove if the tests do not produce coverage yet.
+
+  security:
+    name: security
+    uses: DAH-Projects-and-Innovations/engineering-standards/.github/workflows/security.yml@v1
+    with:
+      python-working-directory: backend # TODO: or remove (Level 2)
+      node-working-directory: frontend # TODO: or remove (Level 2)
+
+# Integration tests with services stay in the project (PY-025). Example of a job to add:
+#
+# integration:
+#   name: backend integration tests
+#   runs-on: ubuntu-latest
+#   timeout-minutes: 20
+#   services:
+#     postgres:
+#       image: postgres:17-alpine
+#       env: { POSTGRES_PASSWORD: test-only }
+#       ports: ["5432:5432"]
+#   steps:
+#     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+#       with: { persist-credentials: false }
+#     - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+#       with: { working-directory: backend, enable-cache: true }
+#     - run: uv sync --locked && uv run pytest -m integration
+#       working-directory: backend

@@ -1,0 +1,18 @@
+# markdownlint configuration: https://github.com/DavidAnson/markdownlint
+default: true
+# Prose lines are not wrapped at a fixed width: it keeps diffs readable for translators.
+MD013: false
+# The same heading text ("Why", "Examples") is allowed under different parents.
+MD024:
+  siblings_only: true
+# A few HTML elements are allowed for layout.
+MD033:
+  allowed_elements: [details, summary, br, img, a, p, picture, source, kbd]
+# Ordered lists use 1. 2. 3.
+MD029:
+  style: ordered
+# Fenced code blocks only.
+MD046:
+  style: fenced
+# Table pipe alignment is not enforced: GitHub renders every style the same way.
+MD060: false

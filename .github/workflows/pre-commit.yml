@@ -1,0 +1,63 @@
+# Reusable workflow: run every pre-commit hook on all files (rule HOOK-007).
+#
+# Local hooks can be skipped with `git commit --no-verify`, so CI runs them again:
+# CI is the source of truth. Only the hooks of the pre-commit stage run here; the pre-push
+# hooks (mypy, pytest) are covered by python-ci.yml and node-ci.yml.
+#
+#   jobs:
+#     pre-commit:
+#       uses: DAH-Projects-and-Innovations/engineering-standards/.github/workflows/pre-commit.yml@v1
+#       with:
+#         skip: no-commit-to-branch,prettier
+name: pre-commit (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      skip:
+        description: >-
+          Comma-separated hook IDs to skip. Skip `no-commit-to-branch` (CI runs on main after a
+          merge) and local hooks that need installed project tools, such as `prettier`.
+        type: string
+        default: no-commit-to-branch
+      pre-commit-version:
+        description: Version of pre-commit to run.
+        type: string
+        default: "4.7.0"
+      timeout-minutes:
+        description: Maximum duration of the job.
+        type: number
+        default: 15
+
+permissions:
+  contents: read
+
+jobs:
+  pre-commit:
+    name: pre-commit hooks
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    permissions:
+      contents: read
+    env:
+      SKIP: ${{ inputs.skip }}
+      PRE_COMMIT_VERSION: ${{ inputs.pre-commit-version }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          enable-cache: false
+
+      - name: Cache pre-commit environments
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
+
+      - name: Run all hooks on all files
+        run: uvx "pre-commit@${PRE_COMMIT_VERSION}" run --all-files --show-diff-on-failure --color always

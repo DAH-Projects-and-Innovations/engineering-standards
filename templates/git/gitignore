@@ -1,0 +1,74 @@
+# DAH Labs .gitignore template (rule FILE-013): Python + Node.js + ML + secrets.
+# Copy to .gitignore at the root of the repository and remove what does not apply.
+
+# --- Secrets and local configuration (SEC-004) ---------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# --- Python ---------------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.ipynb_checkpoints/
+
+# --- Node.js / front end --------------------------------------------------------------------
+node_modules/
+.pnpm-store/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+npm-debug.log*
+pnpm-debug.log*
+# Only pnpm is used (JS-002): other lock files must not come back.
+package-lock.json
+yarn.lock
+
+# --- ML and research (REPO-006) ---------------------------------------------------------------
+# Data is described in data/README.md and stored outside Git.
+data/*
+!data/README.md
+# Model weights and checkpoints.
+models/*
+!models/README.md
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.h5
+*.joblib
+*.pkl
+# Experiment tracking and vector stores.
+mlruns/
+wandb/
+chroma_db/
+*.faiss
+
+# --- Tools ------------------------------------------------------------------------------------
+.lycheecache
+.sonar/
+.scannerwork/
+
+# --- Editors and operating systems ---------------------------------------------------------------
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

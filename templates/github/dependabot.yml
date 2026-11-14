@@ -1,0 +1,79 @@
+# DAH Labs Dependabot template (rules SEC-001, SEC-002, HOOK-006).
+# Copy to .github/dependabot.yml. Remove the entries of ecosystems that the repository does not
+# use, and fix the "directory" values (TODO).
+# Reference: https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference
+version: 2
+
+updates:
+  # Python dependencies managed by uv (pyproject.toml + uv.lock).
+  - package-ecosystem: uv
+    directory: /backend # TODO: folder that contains uv.lock
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: chore
+      include: scope # gives "chore(deps): bump ..."
+    labels: [dependencies]
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  # JavaScript dependencies. The "npm" ecosystem also reads pnpm-lock.yaml.
+  - package-ecosystem: npm
+    directory: /frontend # TODO: folder that contains package.json
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: chore
+      include: scope # gives "chore(deps): bump ..."
+    labels: [dependencies]
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  # Base images of Dockerfiles.
+  - package-ecosystem: docker
+    directories: [/backend, /frontend] # TODO: folders that contain a Dockerfile
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: build
+      include: scope # gives "build(deps): bump ..."
+    labels: [dependencies]
+    ignore:
+      # Stay on the LTS / project versions; move to a new major version in a planned PR.
+      - dependency-name: node
+        update-types: [version-update:semver-major]
+      - dependency-name: python
+        update-types: [version-update:semver-major, version-update:semver-minor]
+
+  # Actions and reusable workflows used in .github/workflows/ (SHA pins are updated too).
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: ci
+      include: scope # gives "ci(deps): bump ..."
+    labels: [dependencies]
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # Hooks of .pre-commit-config.yaml.
+  - package-ecosystem: pre-commit
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: chore
+      include: scope # gives "chore(deps): bump ..."
+    labels: [dependencies]
+    groups:
+      hooks:
+        patterns: ["*"]
