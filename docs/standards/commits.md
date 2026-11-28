@@ -88,6 +88,8 @@ Dependabot uses `chore(deps):` and `build(deps):` titles, which follow this rule
 
 **Why:** GitHub, `git log --oneline` and most tools cut longer lines.
 
+The check skips PRs opened by bots (Dependabot, release-please): they write their own titles, and their format is still checked ([COM-001](#com-001-commit-messages-follow-conventional-commits-100)).
+
 ### COM-005: The body explains why
 
 **SHOULD** · Level 1 · Verified by: code review (manual)

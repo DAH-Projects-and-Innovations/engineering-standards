@@ -68,7 +68,9 @@ jobs:
             The description "{subject}" must start with a lower-case letter and must not end
             with a period. Example: "feat(api): add cohere embedder".
 
+      # Bots (Dependabot, release-please) write their own titles; their format is still checked above.
       - name: Check the PR title length
+        if: github.event.pull_request.user.type != 'Bot'
         env:
           TITLE: ${{ github.event.pull_request.title }}
           MAX_LENGTH: ${{ inputs.max-title-length }}
