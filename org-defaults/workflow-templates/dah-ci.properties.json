@@ -1,0 +1,7 @@
+{
+  "name": "DAH Labs CI",
+  "description": "CI of the DAH Labs engineering standards: conventions, pre-commit, Python and Node checks, security, SonarQube Cloud and Docker build.",
+  "iconName": "octicon checklist",
+  "categories": ["Python", "TypeScript", "Continuous integration"],
+  "filePatterns": ["pyproject.toml$", "package.json$"]
+}

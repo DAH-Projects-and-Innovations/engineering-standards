@@ -153,11 +153,13 @@ Then fix the Ruff lint errors (not formatting) progressively: one rule family pe
 
 1. Enable `strict = true` with one override per failing module (PY-009). CI is green from day one; each later PR removes overrides.
 2. Raise the coverage threshold each time coverage goes up.
-3. SonarQube Cloud, release-please and CodeQL default setup: follow their pages when they are published (the next version of these standards).
+3. SonarQube Cloud: follow [Add a repository](../standards/sonar.md#add-a-repository-for-each-level-2-repository). The gate checks only new code, so it can be required from the first day.
+4. release-please: follow [Set up release-please](../standards/releases.md#set-up-release-please-in-a-repository). Delete the `Unreleased` section of `CHANGELOG.md` first.
+5. CodeQL default setup ([SEC-005](../standards/security.md#sec-005-codeql-code-scanning-uses-the-default-setup)).
 
 ## Step 9 — Architecture refactorings
 
-Move the code towards the layered architecture **one module at a time** (see [Architecture](../standards/architecture.md), next version of these standards). Each PR moves one module or one port, keeps the behavior, and is covered by tests. Add an import-linter contract as soon as a layer exists, so it cannot be broken again.
+Move the code towards the layered architecture **one module at a time** (see [Bring an existing service to this architecture](../standards/architecture.md#bring-an-existing-service-to-this-architecture)). Each PR moves one module or one port, keeps the behavior, and is covered by tests. Add an import-linter contract as soon as a layer exists, so it cannot be broken again.
 
 ## Checklist
 

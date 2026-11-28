@@ -61,6 +61,20 @@ def test_parse_page_reports_wrong_prefix(tmp_path: Path, monkeypatch) -> None:
     assert "does not belong" in errors[0]
 
 
+def test_parse_page_reports_link_in_verification(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(matrix, "ROOT", tmp_path)
+    page = write_page(
+        tmp_path,
+        "commits.md",
+        "### COM-001: Use Conventional Commits\n\n"
+        "**MUST** · Level 1 · Verified by: see [hooks](git-hooks.md) (automatic)\n",
+    )
+
+    _, errors = matrix.parse_page(page)
+
+    assert "must not contain links" in errors[0]
+
+
 def test_repository_rules_are_valid() -> None:
     _, errors = matrix.collect()
 

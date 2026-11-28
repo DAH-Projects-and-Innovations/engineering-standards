@@ -32,6 +32,10 @@ updates:
     groups:
       minor-and-patch:
         update-types: [minor, patch]
+    ignore:
+      # @types/node follows the Node version of the project (an LTS); change both in a planned PR.
+      - dependency-name: "@types/node"
+        update-types: [version-update:semver-major]
 
   # Base images of Dockerfiles.
   - package-ecosystem: docker

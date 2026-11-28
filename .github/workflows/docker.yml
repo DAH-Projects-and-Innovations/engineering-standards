@@ -1,0 +1,177 @@
+# Reusable workflow: lint a Dockerfile, build the image and, on a release, push it to GHCR.
+#
+# On pull requests (build only, nothing is pushed):
+#
+#   jobs:
+#     docker:
+#       uses: DAH-Projects-and-Innovations/engineering-standards/.github/workflows/docker.yml@v1
+#       with:
+#         context: backend
+#
+# On a release (see templates/github/workflows/release.yml), the caller grants the permissions
+# needed to push and attest the image, and passes the released version:
+#
+#       permissions:
+#         contents: read
+#         packages: write
+#         id-token: write
+#         attestations: write
+#       with:
+#         context: backend
+#         push: true
+#         version: ${{ needs.release.outputs.version }}
+#
+# The build job declares no `permissions:` on purpose: it receives the permissions of the
+# calling job, so the same workflow works for read-only pull requests and for releases.
+# A called workflow can only reduce the permissions of its caller, never add to them.
+#
+# Rules covered: SEC-009, HOOK-010, CI-013. See docs/standards/ci-cd.md.
+name: Docker (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      context:
+        description: Build context (the folder that contains the Dockerfile).
+        type: string
+        default: "."
+      dockerfile:
+        description: Path of the Dockerfile, relative to the context.
+        type: string
+        default: Dockerfile
+      image:
+        description: >-
+          Image name without registry, for example `baraza-api`. Empty means the repository
+          name. The image is ghcr.io/<owner>/<image>.
+        type: string
+        default: ""
+      push:
+        description: Push the image to GHCR (only from a release job).
+        type: boolean
+        default: false
+      version:
+        description: >-
+          Released version without `v`, for example `1.4.0`. Gives the tags 1.4.0, 1.4 and
+          latest. Required when push is true.
+        type: string
+        default: ""
+      platforms:
+        description: Target platforms, for example `linux/amd64,linux/arm64`.
+        type: string
+        default: linux/amd64
+      build-args:
+        description: Build arguments, one `NAME=value` per line. Never put secrets here.
+        type: string
+        default: ""
+      hadolint-failure-threshold:
+        description: Lowest hadolint severity that fails the job (error, warning, info, style).
+        type: string
+        default: warning
+      timeout-minutes:
+        description: Maximum duration of the build job.
+        type: number
+        default: 30
+
+jobs:
+  lint:
+    name: Dockerfile lint (hadolint)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    env:
+      HADOLINT_VERSION: v2.15.1
+      HADOLINT_SHA256: c7187db94eeeeca956519a6af171adc31453941a1e777961f6e680f697c8c507
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install hadolint (checksum verified)
+        run: |
+          set -euo pipefail
+          curl -sSfL -o "$RUNNER_TEMP/hadolint" \
+            "https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-linux-x86_64"
+          echo "${HADOLINT_SHA256}  $RUNNER_TEMP/hadolint" | sha256sum --check --strict
+          chmod +x "$RUNNER_TEMP/hadolint"
+
+      - name: Lint the Dockerfile
+        env:
+          DOCKERFILE: ${{ inputs.context }}/${{ inputs.dockerfile }}
+          THRESHOLD: ${{ inputs.hadolint-failure-threshold }}
+        run: |
+          "$RUNNER_TEMP/hadolint" --format tty --failure-threshold "$THRESHOLD" "$DOCKERFILE"
+
+  build:
+    name: Docker image build
+    needs: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    # No `permissions:` here: see the comment at the top of this file.
+    steps:
+      - name: Check the inputs
+        if: inputs.push && inputs.version == ''
+        run: |
+          echo "::error::push is true but version is empty. Push only from a release job."
+          exit 1
+
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Compute the image name
+        id: image
+        env:
+          IMAGE: ${{ inputs.image }}
+          OWNER: ${{ github.repository_owner }}
+          REPOSITORY: ${{ github.event.repository.name }}
+        run: |
+          name="${IMAGE:-$REPOSITORY}"
+          echo "name=ghcr.io/${OWNER,,}/${name,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Compute tags and labels
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ${{ steps.image.outputs.name }}
+          tags: |
+            type=semver,pattern={{version}},value=${{ inputs.version }},enable=${{ inputs.version != '' }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ inputs.version }},enable=${{ inputs.version != '' }}
+            type=raw,value=latest,enable=${{ inputs.version != '' }}
+            type=ref,event=pr
+            type=sha,format=short
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Log in to GitHub Container Registry
+        if: inputs.push
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Build (and push on a release)
+        id: build
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: ${{ inputs.context }}
+          file: ${{ inputs.context }}/${{ inputs.dockerfile }}
+          platforms: ${{ inputs.platforms }}
+          build-args: ${{ inputs.build-args }}
+          push: ${{ inputs.push }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Attest the build provenance
+        if: inputs.push
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: ${{ steps.image.outputs.name }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true

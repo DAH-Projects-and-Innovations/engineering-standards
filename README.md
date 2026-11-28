@@ -22,7 +22,9 @@ Everything works **without infrastructure and without cost**: GitHub (Actions wi
 | Know the rules | [Standards](#standards) below, and the [rules matrix](docs/compliance/rules-matrix.md) |
 | Start a new repository | [Repository structure](docs/standards/repository-structure.md), [Required files](docs/standards/required-files.md) and [`templates/`](templates/README.md) |
 | Bring an existing repository up to the standards | [Migration playbook](docs/migration/playbook.md) and [audit checklist](docs/migration/audit-checklist.md) |
-| Use the shared CI | [CI/CD](docs/standards/ci-cd.md) and [`templates/github/workflows/ci.yml`](templates/github/workflows/ci.yml) |
+| Use the shared CI | [CI/CD](docs/standards/ci-cd.md), [`templates/github/workflows/ci.yml`](templates/github/workflows/ci.yml) and [`release.yml`](templates/github/workflows/release.yml) |
+| See a service that follows the rules | [`examples/python-service/`](examples/python-service/README.md) |
+| Set up the organization `.github` repository | [`org-defaults/`](org-defaults/README.md) |
 | Change a rule | [CONTRIBUTING.md](CONTRIBUTING.md) |
 
 ## Standards
@@ -35,18 +37,25 @@ Each rule has a stable ID, a requirement keyword ([RFC 2119](https://www.rfc-edi
 | Commit messages | [Commits](docs/standards/commits.md) | `COM-*` |
 | Pull requests | [Pull requests](docs/standards/pull-requests.md) | `PR-*` |
 | Reviews | [Code review](docs/standards/code-review.md) | `REV-*` |
+| Versions | [Versioning and releases](docs/standards/releases.md) | `REL-*` |
 | Python | [Python](docs/standards/python.md) | `PY-*` |
 | TypeScript | [JavaScript and TypeScript](docs/standards/javascript.md) | `JS-*` |
+| Design | [Architecture](docs/standards/architecture.md) | `ARCH-*` |
+| Code quality | [Clean code](docs/standards/clean-code.md) | `CC-*` |
+| Tests | [Testing](docs/standards/testing.md) | `TEST-*` |
 | Layout | [Repository structure](docs/standards/repository-structure.md) | `REPO-*` |
 | Files | [Required files](docs/standards/required-files.md) | `FILE-*` |
 | Hooks | [Git hooks](docs/standards/git-hooks.md) | `HOOK-*` |
 | CI/CD | [CI/CD with GitHub Actions](docs/standards/ci-cd.md) | `CI-*` |
+| Quality gate | [SonarQube Cloud](docs/standards/sonar.md) | `SONAR-*` |
 | Security | [Security](docs/standards/security.md) | `SEC-*` |
 | GitHub | [GitHub settings](docs/standards/github-settings.md) | `GH-*` |
+| ML and research | [ML and research](docs/standards/ml-research.md) | `ML-*` |
+| Documentation | [Documentation](docs/standards/documentation.md) | `DOC-*` |
 | Onboarding | [First day](docs/getting-started/first-day.md) | `ONB-*` |
 | Levels | [Compliance levels](docs/compliance/levels.md) | `LVL-*` |
 
-**Planned for the next version** (pages already exist with their scope): [Architecture](docs/standards/architecture.md), [Clean code](docs/standards/clean-code.md), [Testing](docs/standards/testing.md), [SonarQube Cloud](docs/standards/sonar.md), [Releases](docs/standards/releases.md), [ML and research](docs/standards/ml-research.md), [Documentation](docs/standards/documentation.md).
+A complete example that applies the Python, architecture, testing and Docker rules: [`examples/python-service/`](examples/python-service/README.md).
 
 Other pages: [Glossary](docs/glossary.md) · [Architecture Decision Records](docs/adr/README.md) · [Documentation index](docs/README.md).
 
@@ -76,8 +85,11 @@ engineering-standards/
 │   ├── adr/               # decisions about these standards
 │   └── glossary.md
 ├── templates/             # files ready to copy into a project (TODO markers to personalize)
-├── .github/workflows/     # reusable workflows (python-ci, node-ci, pr-conventions, pre-commit, security)
-│                          # and the CI of this repository
+├── examples/
+│   └── python-service/    # a small service that follows every rule, tested in CI
+├── org-defaults/          # profile and workflow templates of the organization .github repository
+├── .github/workflows/     # reusable workflows (python-ci, node-ci, pr-conventions, pre-commit,
+│                          # security, sonar, docker, release-please) and the CI of this repository
 ├── .pre-commit-hooks.yaml # the dah-branch-name hook, usable from any repository
 ├── hooks/                 # code of the hooks
 ├── scripts/               # rules matrix generator, label sync, read-only audit

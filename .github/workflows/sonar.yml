@@ -1,0 +1,138 @@
+# Reusable workflow: SonarQube Cloud analysis with the coverage reports of python-ci and node-ci.
+#
+# Call it after the jobs that produce the coverage artifacts:
+#
+#   jobs:
+#     sonar:
+#       needs: [backend, frontend]
+#       uses: DAH-Projects-and-Innovations/engineering-standards/.github/workflows/sonar.yml@v1
+#       with:
+#         python-working-directory: backend
+#         node-working-directory: frontend
+#       secrets:
+#         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#
+# The project configuration (organization, project key, sources, tests, coverage report paths)
+# lives in sonar-project.properties at the root of the repository (rule SONAR-003).
+#
+# Without SONAR_TOKEN (pull requests from forks, or a repository not yet imported in
+# SonarQube Cloud), the workflow prepares the reports and skips the analysis with a notice.
+#
+# Rules covered: SONAR-002 to SONAR-006. See docs/standards/sonar.md.
+name: SonarQube Cloud (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      python-working-directory:
+        description: >-
+          Directory where python-ci ran (its working-directory). Empty means no Python
+          coverage. The report is restored to <directory>/coverage.xml.
+        type: string
+        default: ""
+      python-coverage-artifact:
+        description: Name of the Python coverage artifact.
+        type: string
+        default: coverage-python
+      node-working-directory:
+        description: >-
+          Directory where node-ci ran. Empty means no Node coverage. The report is
+          restored to <directory>/<node-coverage-path>.
+        type: string
+        default: ""
+      node-coverage-path:
+        description: Path of the LCOV report, relative to node-working-directory.
+        type: string
+        default: coverage/lcov.info
+      node-coverage-artifact:
+        description: Name of the Node coverage artifact.
+        type: string
+        default: coverage-node
+      wait-for-quality-gate:
+        description: Fail the job when the quality gate fails (sonar.qualitygate.wait).
+        type: boolean
+        default: true
+      args:
+        description: Extra arguments for the scanner, for example `-Dsonar.verbose=true`.
+        type: string
+        default: ""
+      timeout-minutes:
+        description: Maximum duration of the job.
+        type: number
+        default: 15
+    secrets:
+      SONAR_TOKEN:
+        description: SonarQube Cloud analysis token (organization secret).
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  sonar:
+    name: SonarQube Cloud analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    permissions:
+      contents: read
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - name: Check out the repository (full history for blame and new code)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Download the Python coverage report
+        if: inputs.python-working-directory != ''
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ inputs.python-coverage-artifact }}
+          path: ${{ inputs.python-working-directory }}
+
+      - name: Download the Node coverage report
+        if: inputs.node-working-directory != ''
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ inputs.node-coverage-artifact }}
+          path: ${{ inputs.node-working-directory }}
+
+      - name: Check the reports and make LCOV paths absolute
+        env:
+          PYTHON_DIR: ${{ inputs.python-working-directory }}
+          NODE_DIR: ${{ inputs.node-working-directory }}
+          NODE_COVERAGE_PATH: ${{ inputs.node-coverage-path }}
+        run: |
+          set -euo pipefail
+          if [[ -n "$PYTHON_DIR" ]]; then
+            test -s "$PYTHON_DIR/coverage.xml"
+            echo "Python coverage report: $PYTHON_DIR/coverage.xml"
+          fi
+          if [[ -n "$NODE_DIR" ]]; then
+            lcov="$NODE_DIR/$NODE_COVERAGE_PATH"
+            if [[ ! -s "$lcov" ]]; then
+              # upload-artifact stores the file without its parent folders.
+              mkdir -p "$(dirname "$lcov")"
+              mv "$NODE_DIR/$(basename "$lcov")" "$lcov"
+            fi
+            # Vitest writes paths relative to the Node project; SonarQube Cloud resolves them
+            # from the repository root. Absolute paths work in both cases.
+            node_abs="$(cd "$NODE_DIR" && pwd)"
+            sed -i -E "s#^SF:([^/])#SF:${node_abs}/\1#" "$lcov"
+            echo "Node coverage report: $lcov"
+          fi
+
+      - name: Skip the analysis without a token
+        if: env.SONAR_TOKEN == ''
+        run: >-
+          echo "::notice title=SonarQube Cloud::No SONAR_TOKEN (pull request from a fork, or
+          secret not configured). The analysis is skipped."
+
+      - name: Analyze with SonarQube Cloud
+        if: env.SONAR_TOKEN != ''
+        uses: SonarSource/sonarqube-scan-action@59202af334b4ba7b5db01b701b8e79f8b3bef0f4 # v8.5.0
+        with:
+          args: >-
+            -Dsonar.qualitygate.wait=${{ inputs.wait-for-quality-gate }}
+            ${{ inputs.args }}

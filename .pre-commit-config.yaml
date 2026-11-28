@@ -94,6 +94,10 @@ repos:
         name: uv-lock (Python fixture)
         files: ^tests/fixtures/python-minimal/(uv\.lock|pyproject\.toml)$
         args: [--project, tests/fixtures/python-minimal, --check]
+      - id: uv-lock
+        name: uv-lock (example service)
+        files: ^examples/python-service/(uv\.lock|pyproject\.toml)$
+        args: [--project, examples/python-service, --check]
 
   # Commit messages: Conventional Commits 1.0.0.
   - repo: https://github.com/compilerla/conventional-pre-commit

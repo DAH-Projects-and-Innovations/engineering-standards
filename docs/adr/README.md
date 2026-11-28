@@ -18,7 +18,7 @@
 | [0005](0005-pnpm-for-javascript-projects.md) | Use pnpm for JavaScript and TypeScript projects | accepted |
 | [0006](0006-mypy-strict-progressive.md) | Use mypy in strict mode, progressively for existing code | proposed |
 | [0007](0007-apache-2-0-default-license.md) | Use Apache-2.0 as the default license for code | proposed |
-| 0008 | Use SonarQube Cloud for code quality (reserved, next version) | — |
+| [0008](0008-sonarqube-cloud-for-code-quality.md) | Use SonarQube Cloud for code quality and coverage on new code | accepted |
 | [0009](0009-central-reusable-workflows.md) | Centralize CI in reusable workflows | accepted |
 
 "Proposed" decisions are applied in these standards but wait for the validation of the DAH Labs team.
@@ -31,4 +31,4 @@
 
 ---
 
-*Last verified: 2026-11-13.*
+*Last verified: 2026-11-14.*
