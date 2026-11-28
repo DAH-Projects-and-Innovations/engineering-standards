@@ -53,3 +53,25 @@ updates:
     groups:
       fixture-node:
         patterns: ["*"]
+
+  # Example service: monthly, like the fixtures.
+  - package-ecosystem: uv
+    directory: /examples/python-service
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: test
+      include: scope
+    labels: [dependencies]
+    groups:
+      example-python:
+        patterns: ["*"]
+
+  - package-ecosystem: docker
+    directory: /examples/python-service
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: test
+      include: scope
+    labels: [dependencies]

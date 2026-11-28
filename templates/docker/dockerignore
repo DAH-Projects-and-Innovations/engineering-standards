@@ -1,0 +1,36 @@
+# DAH Labs .dockerignore template (rule SEC-009). Copy next to the Dockerfile as .dockerignore.
+# Keep the build context small and never send secrets to the Docker daemon.
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Environments, caches and build outputs
+.venv/
+**/__pycache__/
+**/*.py[cod]
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+dist/
+build/
+node_modules/
+
+# Repository files not needed in the image
+.git/
+.github/
+tests/
+docs/
+notebooks/
+data/
+models/
+*.md
+!README.md
+Dockerfile
+.dockerignore
