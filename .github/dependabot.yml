@@ -52,7 +52,14 @@ updates:
     labels: [dependencies]
     groups:
       fixture-node:
-        patterns: ["*"]
+        update-types: [minor, patch]
+    ignore:
+      # @types/node follows the Node LTS version (24).
+      - dependency-name: "@types/node"
+        update-types: [version-update:semver-major]
+      # typescript-eslint 8 does not support TypeScript 7 yet; move in a planned PR.
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
 
   # Example service: monthly, like the fixtures.
   - package-ecosystem: uv
