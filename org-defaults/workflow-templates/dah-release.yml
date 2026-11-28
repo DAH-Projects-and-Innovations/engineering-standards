@@ -1,0 +1,72 @@
+# DAH Labs release template (rules REL-*, CI-013): release-please, then publication.
+# Copy to .github/workflows/release.yml and adapt the TODO markers.
+# Needs release-please-config.json and .release-please-manifest.json at the root
+# (templates/release/). Remove the publication jobs that your repository does not need.
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Never run two releases at the same time, and never cancel one that has started.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: release
+    uses: DAH-Projects-and-Innovations/engineering-standards/.github/workflows/release-please.yml@v1
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    with:
+      # GitHub App of the organization (REL-005). Without it, close and reopen the release PR
+      # by hand to start its checks.
+      app-client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+    secrets:
+      app-private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+
+  # Container image on GHCR, only when a release was created.
+  docker:
+    name: docker
+    needs: release
+    if: needs.release.outputs.release_created == 'true'
+    uses: DAH-Projects-and-Innovations/engineering-standards/.github/workflows/docker.yml@v1
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    with:
+      context: backend # TODO
+      image: TODO-image-name # for example baraza-api
+      push: true
+      version: ${{ needs.release.outputs.version }}
+
+# Python package on PyPI with Trusted Publishing (no token stored in GitHub). Configure the
+# trusted publisher on pypi.org first, then add this job under `jobs:`.
+#
+# pypi:
+#   name: pypi
+#   needs: release
+#   if: needs.release.outputs.release_created == 'true'
+#   runs-on: ubuntu-latest
+#   timeout-minutes: 10
+#   environment: pypi
+#   permissions:
+#     contents: read
+#     id-token: write
+#   steps:
+#     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+#       with:
+#         ref: ${{ needs.release.outputs.sha }}
+#         persist-credentials: false
+#     - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+#     - run: uv build
+#     - run: uv publish --trusted-publishing always

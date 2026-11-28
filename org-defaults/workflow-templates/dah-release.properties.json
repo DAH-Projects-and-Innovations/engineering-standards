@@ -1,0 +1,7 @@
+{
+  "name": "DAH Labs release",
+  "description": "release-please on main, then publication of the Docker image on GHCR when a release is created.",
+  "iconName": "octicon rocket",
+  "categories": ["Deployment"],
+  "filePatterns": ["release-please-config.json$"]
+}

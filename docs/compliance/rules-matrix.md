@@ -14,10 +14,10 @@
 
 | Level | MUST / MUST NOT | SHOULD / SHOULD NOT | MAY | Total |
 |---|---|---|---|---|
-| 1 · Foundation | 101 | 31 | 0 | 132 |
-| 2 · Standard | 11 | 11 | 1 | 23 |
-| 3 · Excellence | 0 | 4 | 1 | 5 |
-| **All levels** | | | | **160** |
+| 1 · Foundation | 120 | 41 | 0 | 161 |
+| 2 · Standard | 28 | 33 | 2 | 63 |
+| 3 · Excellence | 0 | 8 | 2 | 10 |
+| **All levels** | | | | **234** |
 
 Many Level 1 rules are checked by tools that the templates already configure: copying the
 templates and the reusable workflows makes most of them compliant at once.
@@ -64,6 +64,15 @@ templates and the reusable workflows makes most of them compliant at once.
 | [REV-006](../standards/code-review.md#rev-006-the-person-who-opens-a-conversation-resolves-it) | The person who opens a conversation resolves it | SHOULD | 1 | code review (manual) |
 | [REV-007](../standards/code-review.md#rev-007-the-author-understands-every-line-including-ai-generated-code) | The author understands every line, including AI-generated code | MUST | 1 | code review (manual) |
 | [REV-008](../standards/code-review.md#rev-008-reviewers-run-the-code-for-non-trivial-changes) | Reviewers run the code for non-trivial changes | MAY | 2 | code review (manual) |
+| [REL-001](../standards/releases.md#rel-001-versions-follow-semantic-versioning-and-tags-are-vxyz) | Versions follow Semantic Versioning, and tags are `vX.Y.Z` | MUST | 1 | tag list review (manual); release-please (automatic, Level 2) |
+| [REL-002](../standards/releases.md#rel-002-each-release-is-a-github-release-with-notes) | Each release is a GitHub Release with notes | MUST | 1 | Releases page of the repository (manual) |
+| [REL-003](../standards/releases.md#rel-003-release-please-creates-the-versions-tags-and-changelog) | release-please creates the versions, tags and CHANGELOG | MUST | 2 | `release.yml` calls `release-please.yml@v1` (automatic); audit checklist (manual) |
+| [REL-004](../standards/releases.md#rel-004-the-configuration-and-the-manifest-are-at-the-root-and-cover-every-version-file) | The configuration and the manifest are at the root, and cover every version file | MUST | 2 | code review (manual); `uv sync --locked` in CI on the release PR (automatic) |
+| [REL-005](../standards/releases.md#rel-005-the-release-pr-is-opened-with-a-github-app-token) | The release PR is opened with a GitHub App token | SHOULD | 2 | checks run on the release PR (manual) |
+| [REL-006](../standards/releases.md#rel-006-artifacts-are-published-only-from-a-release) | Artifacts are published only from a release | MUST | 2 | workflow review (manual) |
+| [REL-007](../standards/releases.md#rel-007-100-is-released-when-the-public-api-is-stable) | `1.0.0` is released when the public API is stable | SHOULD | 2 | code review of the release PR (manual) |
+| [REL-008](../standards/releases.md#rel-008-tags-are-never-moved-or-deleted) | Tags are never moved or deleted | MUST | 1 | GitHub ruleset on tags (automatic, when configured); code review (manual) |
+| [REL-009](../standards/releases.md#rel-009-released-artifacts-have-a-build-provenance-attestation) | Released artifacts have a build provenance attestation | SHOULD | 3 | `gh attestation verify` (manual) |
 | [PY-001](../standards/python.md#py-001-the-project-supports-python-312-or-newer) | The project supports Python 3.12 or newer | MUST | 1 | `python-version` input of `python-ci.yml` (automatic); code review of `pyproject.toml` (manual) |
 | [PY-002](../standards/python.md#py-002-uv-manages-environments-and-dependencies-and-uvlock-is-committed) | uv manages environments and dependencies, and `uv.lock` is committed | MUST | 1 | `uv sync --locked` in `python-ci.yml` fails when the lock file is missing or outdated (automatic) |
 | [PY-003](../standards/python.md#py-003-pyprojecttoml-is-the-single-source-of-configuration) | `pyproject.toml` is the single source of configuration | MUST | 1 | code review (manual); audit checklist (manual) |
@@ -101,6 +110,40 @@ templates and the reusable workflows makes most of them compliant at once.
 | [JS-010](../standards/javascript.md#js-010-the-folder-structure-follows-the-framework-conventions) | The folder structure follows the framework conventions | SHOULD | 2 | code review (manual) |
 | [JS-011](../standards/javascript.md#js-011-no-consolelog-in-application-code) | No `console.log` in application code | MUST | 1 | ESLint `no-console` (automatic) |
 | [JS-012](../standards/javascript.md#js-012-type-aware-eslint-rules-are-enabled) | Type-aware ESLint rules are enabled | SHOULD | 2 | `eslint.config.js` review (manual); `pnpm run lint` (automatic) |
+| [ARCH-001](../standards/architecture.md#arch-001-a-service-is-organized-in-layers) | A service is organized in layers | MUST | 2 | code review (manual); import-linter `layers` contract (automatic) |
+| [ARCH-002](../standards/architecture.md#arch-002-the-dependency-rule-is-checked-by-import-linter-in-ci) | The dependency rule is checked by import-linter in CI | MUST | 2 | `lint-imports` in `python-ci.yml` with `run-import-linter: true` (automatic) |
+| [ARCH-003](../standards/architecture.md#arch-003-the-domain-and-the-application-import-no-framework-and-no-io-library) | The domain and the application import no framework and no I/O library | MUST | 2 | import-linter `forbidden` contract (automatic) |
+| [ARCH-004](../standards/architecture.md#arch-004-one-composition-root-creates-the-adapters-nothing-is-created-at-import-time) | One composition root creates the adapters; nothing is created at import time | MUST | 2 | code review (manual) |
+| [ARCH-005](../standards/architecture.md#arch-005-ports-are-protocol-classes-in-application-adapters-are-named-after-their-technology) | Ports are `Protocol` classes in `application`, adapters are named after their technology | SHOULD | 2 | code review (manual) |
+| [ARCH-006](../standards/architecture.md#arch-006-the-interface-layer-is-thin) | The interface layer is thin | SHOULD | 2 | code review (manual) |
+| [ARCH-007](../standards/architecture.md#arch-007-configuration-is-read-once-at-startup-and-passed-as-arguments) | Configuration is read once at startup and passed as arguments | SHOULD | 1 | code review (manual); `grep -rn os.environ src/` (manual) |
+| [ARCH-008](../standards/architecture.md#arch-008-libraries-scripts-and-research-code-may-use-a-simpler-structure) | Libraries, scripts and research code MAY use a simpler structure | MAY | 2 | code review (manual) |
+| [ARCH-009](../standards/architecture.md#arch-009-structuring-architecture-choices-are-recorded-in-adrs) | Structuring architecture choices are recorded in ADRs | SHOULD | 2 | `docs/adr/` review (manual) |
+| [ARCH-010](../standards/architecture.md#arch-010-the-frontend-calls-the-backend-through-one-typed-api-client) | The frontend calls the backend through one typed API client | SHOULD | 2 | code review (manual) |
+| [CC-001](../standards/clean-code.md#cc-001-names-say-what-things-are-in-english-without-abbreviations) | Names say what things are, in English, without abbreviations | MUST | 1 | code review (manual); Ruff `N` rules for the naming style (automatic) |
+| [CC-002](../standards/clean-code.md#cc-002-functions-are-short-do-one-thing-and-stay-within-the-complexity-limits) | Functions are short, do one thing, and stay within the complexity limits | SHOULD | 1 | Ruff `C90`, `PLR0911`, `PLR0912`, `PLR0913`, `PLR0915` (automatic) |
+| [CC-003](../standards/clean-code.md#cc-003-cognitive-complexity-of-a-function-is-at-most-15) | Cognitive complexity of a function is at most 15 | SHOULD | 2 | SonarQube Cloud rule "Cognitive Complexity of functions should not be too high" (automatic) |
+| [CC-004](../standards/clean-code.md#cc-004-no-magic-numbers-or-strings) | No magic numbers or strings | MUST | 1 | Ruff `PLR2004` (automatic); code review (manual) |
+| [CC-005](../standards/clean-code.md#cc-005-no-dead-code-and-no-commented-out-code) | No dead code and no commented-out code | MUST | 1 | Ruff `F401`, `F841`, `ERA001` (automatic); SonarQube Cloud (automatic) |
+| [CC-006](../standards/clean-code.md#cc-006-errors-are-explicit-and-never-silenced) | Errors are explicit and never silenced | MUST | 1 | Ruff `E722`, `S110`, `S112`, `B904` (automatic); code review (manual) |
+| [CC-007](../standards/clean-code.md#cc-007-early-returns-instead-of-deep-nesting) | Early returns instead of deep nesting | SHOULD | 1 | code review (manual); SonarQube Cloud cognitive complexity (automatic) |
+| [CC-008](../standards/clean-code.md#cc-008-each-module-and-class-has-one-responsibility-and-depends-on-abstractions) | Each module and class has one responsibility, and depends on abstractions | SHOULD | 2 | code review (manual); import-linter (automatic) |
+| [CC-009](../standards/clean-code.md#cc-009-comments-explain-why-a-todo-has-an-issue-number) | Comments explain why; a TODO has an issue number | SHOULD | 1 | code review (manual) |
+| [CC-010](../standards/clean-code.md#cc-010-data-is-immutable-by-default-and-default-arguments-are-never-mutable) | Data is immutable by default, and default arguments are never mutable | SHOULD | 1 | Ruff `B006`, `B008`, `RUF009` (automatic); code review (manual) |
+| [CC-011](../standards/clean-code.md#cc-011-business-logic-is-in-pure-functions-side-effects-are-at-the-edges) | Business logic is in pure functions; side effects are at the edges | SHOULD | 1 | code review (manual) |
+| [CC-012](../standards/clean-code.md#cc-012-duplicated-logic-is-extracted-the-third-time) | Duplicated logic is extracted the third time | SHOULD | 2 | SonarQube Cloud duplication condition, at most 3 % on new code (automatic) |
+| [TEST-001](../standards/testing.md#test-001-every-bug-fix-comes-with-a-regression-test) | Every bug fix comes with a regression test | MUST | 1 | code review of `fix:` PRs (manual) |
+| [TEST-002](../standards/testing.md#test-002-every-new-feature-includes-tests-of-its-behavior) | Every new feature includes tests of its behavior | MUST | 1 | code review of `feat:` PRs (manual); SonarQube Cloud coverage on new code (automatic, Level 2) |
+| [TEST-003](../standards/testing.md#test-003-ports-are-replaced-by-fakes-not-by-patches-of-internal-code) | Ports are replaced by fakes, not by patches of internal code | SHOULD | 2 | code review (manual) |
+| [TEST-004](../standards/testing.md#test-004-adapters-are-tested-against-mocked-or-recorded-http-responses) | Adapters are tested against mocked or recorded HTTP responses | SHOULD | 2 | code review (manual) |
+| [TEST-005](../standards/testing.md#test-005-integration-tests-use-real-services-in-containers) | Integration tests use real services in containers | SHOULD | 2 | CI job with `services:` or testcontainers (automatic) |
+| [TEST-006](../standards/testing.md#test-006-tests-are-independent-and-leave-nothing-behind) | Tests are independent and leave nothing behind | MUST | 1 | `pytest -p randomly` or `pytest-xdist` run (manual); code review (manual) |
+| [TEST-007](../standards/testing.md#test-007-a-flaky-test-is-quarantined-the-same-day-with-an-issue) | A flaky test is quarantined the same day, with an issue | MUST | 1 | code review (manual); `flaky-test` label on issues (manual) |
+| [TEST-008](../standards/testing.md#test-008-test-data-is-synthetic-and-built-by-factories) | Test data is synthetic and built by factories | SHOULD | 2 | code review (manual) |
+| [TEST-009](../standards/testing.md#test-009-tests-check-behavior-through-the-public-api) | Tests check behavior through the public API | SHOULD | 1 | code review (manual) |
+| [TEST-010](../standards/testing.md#test-010-one-test-checks-one-behavior-and-its-name-says-which) | One test checks one behavior, and its name says which | SHOULD | 1 | code review (manual) |
+| [TEST-011](../standards/testing.md#test-011-coverage-on-new-code-is-at-least-80-) | Coverage on new code is at least 80 % | MUST | 2 | SonarQube Cloud quality gate (automatic) |
+| [TEST-012](../standards/testing.md#test-012-the-main-user-journeys-have-end-to-end-tests) | The main user journeys have end-to-end tests | SHOULD | 3 | CI job with Playwright (automatic) |
 | [REPO-001](../standards/repository-structure.md#repo-001-the-root-holds-standard-files-and-one-folder-per-part) | The root holds standard files and one folder per part | MUST | 1 | code review (manual); audit checklist (manual) |
 | [REPO-002](../standards/repository-structure.md#repo-002-a-service-repository-follows-the-service-layout) | A service repository follows the service layout | SHOULD | 1 | code review (manual) |
 | [REPO-003](../standards/repository-structure.md#repo-003-a-python-library-uses-the-src-layout) | A Python library uses the `src/` layout | MUST | 1 | code review (manual) |
@@ -152,6 +195,16 @@ templates and the reusable workflows makes most of them compliant at once.
 | [CI-012](../standards/ci-cd.md#ci-012-workflows-are-linted-by-actionlint) | Workflows are linted by actionlint | SHOULD | 1 | `actionlint` pre-commit hook (automatic) |
 | [CI-013](../standards/ci-cd.md#ci-013-artifacts-are-published-only-from-a-release-with-short-lived-credentials) | Artifacts are published only from a release, with short-lived credentials | SHOULD | 2 | workflow review (manual) |
 | [CI-014](../standards/ci-cd.md#ci-014-pull-request-feedback-takes-less-than-10-minutes) | Pull request feedback takes less than 10 minutes | SHOULD | 2 | Actions run durations (manual) |
+| [SONAR-001](../standards/sonar.md#sonar-001-level-2-repositories-are-analyzed-by-sonarqube-cloud) | Level 2 repositories are analyzed by SonarQube Cloud | MUST | 2 | audit checklist (manual) |
+| [SONAR-002](../standards/sonar.md#sonar-002-analysis-runs-in-ci-with-the-reusable-workflow-and-automatic-analysis-is-off) | Analysis runs in CI with the reusable workflow, and automatic analysis is off | MUST | 2 | `sonar` job in `ci.yml` (automatic); project Administration → Analysis Method (manual) |
+| [SONAR-003](../standards/sonar.md#sonar-003-sonar-projectproperties-describes-the-scope-of-the-analysis) | `sonar-project.properties` describes the scope of the analysis | MUST | 2 | code review (manual) |
+| [SONAR-004](../standards/sonar.md#sonar-004-the-quality-gate-is-the-built-in-sonar-way-gate-and-blocks-the-merge) | The quality gate is the built-in Sonar way gate and blocks the merge | MUST | 2 | GitHub ruleset required check `sonar / SonarQube Cloud analysis` (automatic) |
+| [SONAR-005](../standards/sonar.md#sonar-005-coverage-reports-are-imported-for-every-language) | Coverage reports are imported for every language | MUST | 2 | SonarQube Cloud project overview shows coverage (manual) |
+| [SONAR-006](../standards/sonar.md#sonar-006-the-token-is-an-organization-secret-fork-prs-are-analyzed-after-the-merge) | The token is an organization secret; fork PRs are analyzed after the merge | MUST | 2 | `secret scanning` and code review (automatic and manual) |
+| [SONAR-007](../standards/sonar.md#sonar-007-the-new-code-period-is-30-days) | The new code period is 30 days | SHOULD | 2 | SonarQube Cloud organization settings (manual) |
+| [SONAR-008](../standards/sonar.md#sonar-008-issues-are-fixed-or-closed-with-a-reason) | Issues are fixed, or closed with a reason | SHOULD | 2 | code review (manual) |
+| [SONAR-009](../standards/sonar.md#sonar-009-the-readme-shows-the-quality-gate-and-coverage-badges) | The README shows the quality gate and coverage badges | SHOULD | 2 | README review (manual) |
+| [SONAR-010](../standards/sonar.md#sonar-010-the-whole-code-base-meets-the-gate-conditions-not-only-new-code) | The whole code base meets the gate conditions, not only new code | SHOULD | 3 | SonarQube Cloud project overview, "Overall code" tab (manual) |
 | [SEC-001](../standards/security.md#sec-001-dependabot-alerts-and-security-updates-are-enabled) | Dependabot alerts and security updates are enabled | MUST | 1 | Settings → Advanced Security (automatic, `gh api repos/{owner}/{repo} --jq .security_and_analysis`) |
 | [SEC-002](../standards/security.md#sec-002-dependabot-version-updates-run-weekly-and-are-grouped) | Dependabot version updates run weekly and are grouped | MUST | 1 | `.github/dependabot.yml` review (manual) |
 | [SEC-003](../standards/security.md#sec-003-secret-scanning-and-push-protection-are-enabled) | Secret scanning and push protection are enabled | MUST | 1 | Settings → Advanced Security (automatic); `security.yml` gitleaks job (automatic) |
@@ -177,6 +230,27 @@ templates and the reusable workflows makes most of them compliant at once.
 | [GH-010](../standards/github-settings.md#gh-010-the-codeowners-team-has-write-access) | The CODEOWNERS team has write access | MUST | 1 | no error shown on the CODEOWNERS file page (automatic) |
 | [GH-011](../standards/github-settings.md#gh-011-shared-secrets-are-organization-secrets-with-selected-repositories) | Shared secrets are organization secrets with selected repositories | SHOULD | 2 | Settings → Secrets and variables → Actions (manual) |
 | [GH-012](../standards/github-settings.md#gh-012-the-workflow-token-is-read-only-by-default) | The workflow token is read-only by default | MUST | 1 | Settings → Actions → General → Workflow permissions (manual) |
+| [ML-001](../standards/ml-research.md#ml-001-data-and-models-are-outside-git-and-datareadmemd-says-how-to-get-them) | Data and models are outside Git, and `data/README.md` says how to get them | MUST | 1 | `check-added-large-files` hook (automatic); `data/README.md` review (manual) |
+| [ML-002](../standards/ml-research.md#ml-002-every-run-is-reproducible-from-a-config-file-a-seed-and-the-lock-file) | Every run is reproducible from a config file, a seed and the lock file | MUST | 1 | code review (manual); re-run of a reported result (manual) |
+| [ML-003](../standards/ml-research.md#ml-003-notebooks-are-for-exploration-outputs-are-stripped-and-reusable-code-moves-to-src) | Notebooks are for exploration; outputs are stripped and reusable code moves to `src/` | MUST | 1 | `nbstripout` hook (automatic); code review (manual) |
+| [ML-004](../standards/ml-research.md#ml-004-every-published-model-has-a-model-card) | Every published model has a model card | MUST | 2 | Hub repository review (manual) |
+| [ML-005](../standards/ml-research.md#ml-005-every-published-dataset-has-a-dataset-card-with-sources-license-and-personal-data) | Every published dataset has a dataset card, with sources, license and personal data | MUST | 2 | Hub repository review (manual) |
+| [ML-006](../standards/ml-research.md#ml-006-evaluation-uses-a-held-out-test-set-a-versioned-harness-and-a-baseline) | Evaluation uses a held-out test set, a versioned harness and a baseline | MUST | 1 | code review (manual) |
+| [ML-007](../standards/ml-research.md#ml-007-every-run-records-its-config-commit-data-version-and-metrics) | Every run records its config, commit, data version and metrics | SHOULD | 2 | `experiments/` review (manual) |
+| [ML-008](../standards/ml-research.md#ml-008-paid-api-calls-have-a-budget-a-cache-and-a-dry-run) | Paid API calls have a budget, a cache and a dry run | MUST | 1 | code review (manual) |
+| [ML-009](../standards/ml-research.md#ml-009-results-are-reported-per-language-and-country-when-the-data-covers-several) | Results are reported per language and country when the data covers several | SHOULD | 2 | model card review (manual) |
+| [ML-010](../standards/ml-research.md#ml-010-published-models-and-datasets-are-versioned-with-the-code) | Published models and datasets are versioned with the code | SHOULD | 2 | Hub repository tags (manual) |
+| [ML-011](../standards/ml-research.md#ml-011-gpu-code-is-marked-and-ci-runs-a-small-cpu-smoke-test) | GPU code is marked, and CI runs a small CPU smoke test | MUST | 1 | pytest markers (automatic) |
+| [ML-012](../standards/ml-research.md#ml-012-research-outputs-are-citable) | Research outputs are citable | SHOULD | 3 | `CITATION.cff` and Zenodo DOI (manual) |
+| [DOC-001](../standards/documentation.md#doc-001-documentation-is-in-simple-english) | Documentation is in simple English | MUST | 1 | code review (manual) |
+| [DOC-002](../standards/documentation.md#doc-002-docs-has-an-index-and-pages-are-written-for-a-task) | `docs/` has an index, and pages are written for a task | SHOULD | 1 | `docs/README.md` exists (manual) |
+| [DOC-003](../standards/documentation.md#doc-003-the-architecture-is-described-on-one-page-with-a-diagram) | The architecture is described on one page, with a diagram | SHOULD | 2 | `docs/architecture.md` review (manual) |
+| [DOC-004](../standards/documentation.md#doc-004-structuring-decisions-are-recorded-in-adrs) | Structuring decisions are recorded in ADRs | MUST | 2 | `docs/adr/` review (manual) |
+| [DOC-005](../standards/documentation.md#doc-005-diagrams-are-code-mermaid) | Diagrams are code (Mermaid) | SHOULD | 1 | code review (manual) |
+| [DOC-006](../standards/documentation.md#doc-006-the-http-api-is-described-by-an-openapi-schema-generated-from-the-code) | The HTTP API is described by an OpenAPI schema generated from the code | SHOULD | 2 | CI check that `docs/api/openapi.json` is up to date (automatic) |
+| [DOC-007](../standards/documentation.md#doc-007-documentation-changes-in-the-same-pr-as-the-code) | Documentation changes in the same PR as the code | MUST | 1 | PR template checkbox and code review (manual) |
+| [DOC-008](../standards/documentation.md#doc-008-markdown-is-linted-and-links-are-checked-in-ci) | Markdown is linted and links are checked in CI | SHOULD | 2 | pre-commit hooks and CI (automatic) |
+| [DOC-009](../standards/documentation.md#doc-009-a-documentation-site-is-optional-and-built-from-the-same-markdown) | A documentation site is optional and built from the same Markdown | MAY | 3 | GitHub Pages deployment (manual) |
 | [ONB-001](../getting-started/first-day.md#onb-001-each-repository-keeps-a-few-well-described-good-first-issue-issues) | Each repository keeps a few well-described `good first issue` issues | SHOULD | 1 | `gh issue list --label "good first issue"` returns at least 3 open issues (manual) |
 | [ONB-002](../getting-started/first-day.md#onb-002-first-time-contributors-get-an-answer-within-2-working-days) | First-time contributors get an answer within 2 working days | SHOULD | 1 | monthly review of open issues and PRs from first-time contributors (manual) |
 | [ONB-003](../getting-started/first-day.md#onb-003-contributors-use-a-configured-git-identity-and-two-factor-authentication) | Contributors use a configured Git identity and two-factor authentication | MUST | 1 | commits show a GitHub account (manual); organization 2FA requirement (automatic, GH-008) |

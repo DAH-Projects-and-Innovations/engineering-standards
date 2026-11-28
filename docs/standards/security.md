@@ -110,7 +110,7 @@ Enable it in **Settings → Advanced Security → Private vulnerability reportin
 - Use a multi-stage build: build tools stay in the build stage.
 - Create and use an unprivileged user: `USER app`.
 - Copy only what is needed (`.dockerignore`); never copy `.env`.
-- The Dockerfile template is planned for the next version of these standards.
+- Start from the [Dockerfile template](../../templates/docker/Dockerfile.python) (multi-stage, uv, non-root) and its [`.dockerignore`](../../templates/docker/dockerignore). The [`docker.yml`](../../.github/workflows/docker.yml) reusable workflow runs hadolint and builds the image.
 
 ### SEC-010: No real personal data in the repository, tests or fixtures
 

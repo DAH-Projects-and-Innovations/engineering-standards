@@ -106,6 +106,17 @@ A ❔ result means that the token cannot read the value: check it by hand in the
 - [ ] **CI-009** No `pull_request_target` that checks out PR code: `grep -rn pull_request_target .github/workflows`.
 - [ ] **CI-011** No `${{ github.event.` inside `run:` blocks.
 
+### Level 2: architecture, quality gate, releases
+
+- [ ] **ARCH-001/002** The service code has the five layers; `uv run lint-imports` passes; note the number of broken contracts.
+- [ ] **ARCH-004** No client, connection or setting created at import time: `grep -rnE "^[a-z_]+ = .*(Client|connect|Settings)\(" src/`.
+- [ ] **TEST-003** Use cases are tested with fakes, not with `mock.patch` of internal modules: `grep -rn "mock.patch" tests/ | wc -l`.
+- [ ] **SONAR-001/002** The repository is a SonarQube Cloud project with CI-based analysis; automatic analysis is off.
+- [ ] **SONAR-004** The quality gate is green on `main`; `sonar / SonarQube Cloud analysis` is a required check.
+- [ ] **REL-003/004** `release-please-config.json` and `.release-please-manifest.json` exist; `release.yml` calls `release-please.yml@v1`; tags are `vX.Y.Z`.
+- [ ] **DOC-004** Structuring decisions have ADRs in `docs/adr/`.
+- [ ] **ML-001/004/005** (research repositories) `data/README.md` gives sources and checksums; published models and datasets have cards.
+
 ### Security
 
 - [ ] **SEC-002** `dependabot.yml` covers every ecosystem present (`uv`, `npm`, `docker`, `github-actions`, `pre-commit`).

@@ -100,6 +100,11 @@ def parse_page(path: Path) -> tuple[list[Rule], list[str]]:
                 "'**MUST** · Level 1 · Verified by: ...'"
             )
             continue
+        if "](" in meta["verification"] or "|" in meta["verification"]:
+            errors.append(
+                f"{location}: {rule_id} 'Verified by' must not contain links or '|': "
+                "the matrix copies it into a table of another folder"
+            )
         rules.append(
             Rule(
                 rule_id=rule_id,
